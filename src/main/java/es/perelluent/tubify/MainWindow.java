@@ -63,11 +63,10 @@ public class MainWindow extends javax.swing.JFrame {
                     cmd.add(outputPath);
                     cmd.add("-f");
                     cmd.add(formatSelector);
-
-                    if (remuxToMp4) {
-                        cmd.add("--remux-video");
-                        cmd.add("mp4");
-                    }
+                    cmd.add("--merge-output-format");
+                    cmd.add("mkv");
+                   
+                   
                     ProcessBuilder pb = new ProcessBuilder(cmd);
                     pb.redirectErrorStream(true);
                     Process process = pb.start();
