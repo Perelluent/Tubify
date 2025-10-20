@@ -97,7 +97,13 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <EmptySpace min="0" pref="720" max="32767" attributes="0"/>
+              <Group type="102" alignment="0" attributes="0">
+                  <EmptySpace min="-2" pref="52" max="-2" attributes="0"/>
+                  <Component id="btnDownload" min="-2" pref="99" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="65" max="-2" attributes="0"/>
+                  <Component id="cmbResolucion" min="-2" pref="173" max="-2" attributes="0"/>
+                  <EmptySpace pref="331" max="32767" attributes="0"/>
+              </Group>
               <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
@@ -111,10 +117,7 @@
                           <Component id="jScrollPane1" min="-2" pref="340" max="-2" attributes="0"/>
                           <Group type="102" attributes="0">
                               <EmptySpace min="110" pref="110" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="lbl1" min="-2" pref="100" max="-2" attributes="0"/>
-                                  <Component id="btnDownload" min="-2" pref="90" max="-2" attributes="0"/>
-                              </Group>
+                              <Component id="lbl1" min="-2" pref="100" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
@@ -124,7 +127,14 @@
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
-              <EmptySpace min="0" pref="590" max="32767" attributes="0"/>
+              <Group type="102" alignment="0" attributes="0">
+                  <EmptySpace min="-2" pref="116" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="btnDownload" alignment="3" min="-2" pref="40" max="-2" attributes="0"/>
+                      <Component id="cmbResolucion" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace pref="434" max="32767" attributes="0"/>
+              </Group>
               <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
@@ -134,9 +144,7 @@
                           <Component id="txtUrl" min="-2" max="-2" attributes="0"/>
                           <Component id="btnPreferences" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="17" pref="17" max="-2" attributes="0"/>
-                      <Component id="btnDownload" min="-2" pref="40" max="-2" attributes="0"/>
-                      <EmptySpace min="20" pref="20" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="77" max="-2" attributes="0"/>
                       <Component id="prg1" min="-2" pref="20" max="-2" attributes="0"/>
                       <EmptySpace min="10" pref="10" max="-2" attributes="0"/>
                       <Component id="jScrollPane1" min="-2" pref="340" max="-2" attributes="0"/>
@@ -197,6 +205,20 @@
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnPreferencesActionPerformed"/>
           </Events>
+        </Component>
+        <Component class="javax.swing.JComboBox" name="cmbResolucion">
+          <Properties>
+            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+              <StringArray count="3">
+                <StringItem index="0" value="FullHD"/>
+                <StringItem index="1" value="720p"/>
+                <StringItem index="2" value="480p"/>
+              </StringArray>
+            </Property>
+          </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+          </AuxValues>
         </Component>
       </SubComponents>
     </Container>

@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,7 +23,6 @@ public class MainWindow extends javax.swing.JFrame {
 
     private final String YTDLP_PATH = System.getenv("LOCALAPPDATA") + "\\yt-dlp\\yt-dlp.exe";
     private Preferences preferences = new Preferences(this);
-    
 
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(MainWindow.class.getName());
 
@@ -30,17 +30,15 @@ public class MainWindow extends javax.swing.JFrame {
      * Creates new form MainWindow
      */
     public MainWindow() {
-        
-        this.preferences = preferences;
-        
+
         initComponents();
         preferences.setBounds(0, 0, getWidth(), getHeight());
         preferences.setVisible(false);
         getContentPane().add(preferences);
-        
+
     }
 
-    private void downloadVideo(String outputDir) {
+    private void downloadVideo(String outputPath) {
         //txaDebug.append("Trying to download " + txtUrl.getText() + "...\n\n");
         //txaDebug.append(YTDLP_PATH);
         SwingWorker<Void, String> worker;
@@ -49,10 +47,29 @@ public class MainWindow extends javax.swing.JFrame {
             protected Void doInBackground() throws Exception {
                 try {
                     // Replace "yourExecutable.exe" and arguments as needed
-                    ProcessBuilder pb = new ProcessBuilder(YTDLP_PATH, txtUrl.getText(),"-o", 
-                    outputDir
-                );
-                    pb.redirectErrorStream(true); // Combine stdout and stderr
+                    /*ProcessBuilder pb = new ProcessBuilder(YTDLP_PATH, txtUrl.getText(), "-o",
+                            outputPath
+                    );*/
+                    String url = txtUrl.getText().trim();
+                    String selectedRes = (String) cmbResolucion.getSelectedItem();
+                    String formatSelector = chooseResolution(selectedRes);
+
+                    boolean remuxToMp4 = true;
+
+                    List<String> cmd = new ArrayList<>();
+                    cmd.add(YTDLP_PATH);
+                    cmd.add(url);
+                    cmd.add("-o");
+                    cmd.add(outputPath);
+                    cmd.add("-f");
+                    cmd.add(formatSelector);
+
+                    if (remuxToMp4) {
+                        cmd.add("--remux-video");
+                        cmd.add("mp4");
+                    }
+                    ProcessBuilder pb = new ProcessBuilder(cmd);
+                    pb.redirectErrorStream(true);
                     Process process = pb.start();
 
                     // Read output
@@ -102,10 +119,27 @@ public class MainWindow extends javax.swing.JFrame {
         };
         worker.execute();
     }
+
+    private String chooseResolution(String selected) {
+        if (selected == null) {
+            return "bestvideo+bestaudio/best";
+        }
+        String s = selected;
+        if (s.contains("FullHD")) {
+            return "bv*[height<=1080]+ba/b[height<=1080]";
+        } else if (s.contains("720")) {
+            return "bv*[height<=720]+ba/b[height<=720]";
+        } else if (s.contains("480")) {
+            return "bv*[height<=480]+ba/b[height<=480]";
+        }
+        return "bestvideo+bestaudio/best";
+    }
+
     public void showMainWindow() {
         pnlMain.setVisible(true);
         preferences.setVisible(false);
     }
+
     public void showPreferencesWindow() {
         pnlMain.setVisible(false);
         preferences.setVisible(true);
@@ -129,6 +163,7 @@ public class MainWindow extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         txaDownloadResult = new javax.swing.JTextArea();
         btnPreferences = new javax.swing.JButton();
+        cmbResolucion = new javax.swing.JComboBox<>();
         jMenuBar1 = new javax.swing.JMenuBar();
         mnuFile = new javax.swing.JMenu();
         mniExit = new javax.swing.JMenuItem();
@@ -172,11 +207,18 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
 
+        cmbResolucion.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "FullHD", "720p", "480p" }));
+
         javax.swing.GroupLayout pnlMainLayout = new javax.swing.GroupLayout(pnlMain);
         pnlMain.setLayout(pnlMainLayout);
         pnlMainLayout.setHorizontalGroup(
             pnlMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 720, Short.MAX_VALUE)
+            .addGroup(pnlMainLayout.createSequentialGroup()
+                .addGap(52, 52, 52)
+                .addComponent(btnDownload, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(65, 65, 65)
+                .addComponent(cmbResolucion, javax.swing.GroupLayout.PREFERRED_SIZE, 173, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(331, Short.MAX_VALUE))
             .addGroup(pnlMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(pnlMainLayout.createSequentialGroup()
                     .addGap(0, 0, Short.MAX_VALUE)
@@ -189,14 +231,17 @@ public class MainWindow extends javax.swing.JFrame {
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGroup(pnlMainLayout.createSequentialGroup()
                             .addGap(110, 110, 110)
-                            .addGroup(pnlMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(lbl1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(btnDownload, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(lbl1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGap(0, 0, Short.MAX_VALUE)))
         );
         pnlMainLayout.setVerticalGroup(
             pnlMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 590, Short.MAX_VALUE)
+            .addGroup(pnlMainLayout.createSequentialGroup()
+                .addGap(116, 116, 116)
+                .addGroup(pnlMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnDownload, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cmbResolucion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(434, Short.MAX_VALUE))
             .addGroup(pnlMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(pnlMainLayout.createSequentialGroup()
                     .addGap(0, 0, Short.MAX_VALUE)
@@ -205,9 +250,7 @@ public class MainWindow extends javax.swing.JFrame {
                     .addGroup(pnlMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addComponent(txtUrl, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(btnPreferences))
-                    .addGap(17, 17, 17)
-                    .addComponent(btnDownload, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(20, 20, 20)
+                    .addGap(77, 77, 77)
                     .addComponent(prg1, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGap(10, 10, 10)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -251,11 +294,15 @@ public class MainWindow extends javax.swing.JFrame {
     private void btnDownloadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDownloadActionPerformed
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("Save as...");
-        chooser.setSelectedFile(new File(""));
+        chooser.setSelectedFile(new File(getTitle()));
         int returnVal = chooser.showSaveDialog(this);
-        if (returnVal == JFileChooser.APPROVE_OPTION){
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
             File selectedFile = chooser.getSelectedFile();
             String outputPath = selectedFile.getAbsolutePath();
+
+            if (!outputPath.contains("%(ext)s")) {    //para añadir la extensión .mp4
+                outputPath = outputPath + ".%(ext)s";
+            }
             downloadVideo(outputPath);
         }
     }//GEN-LAST:event_btnDownloadActionPerformed
@@ -296,6 +343,7 @@ public class MainWindow extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnDownload;
     private javax.swing.JButton btnPreferences;
+    private javax.swing.JComboBox<String> cmbResolucion;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lbl1;

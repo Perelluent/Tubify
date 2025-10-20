@@ -30,17 +30,12 @@ public class Preferences extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        cmbPreferences = new javax.swing.JComboBox<>();
         lblPreferences = new javax.swing.JLabel();
         btnBack = new javax.swing.JButton();
 
         setOpaque(false);
         setPreferredSize(new java.awt.Dimension(900, 900));
         setLayout(null);
-
-        cmbPreferences.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "FullHD", "720p", "480p" }));
-        add(cmbPreferences);
-        cmbPreferences.setBounds(108, 65, 175, 22);
 
         lblPreferences.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblPreferences.setText("Preferences");
@@ -69,7 +64,6 @@ public class Preferences extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnBack;
-    private javax.swing.JComboBox<String> cmbPreferences;
     private javax.swing.JLabel lblPreferences;
     // End of variables declaration//GEN-END:variables
 }
