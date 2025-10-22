@@ -8,10 +8,12 @@ package es.perelluent.tubify;
  *
  * @author Perelluent
  */
+
 public class Preferences extends javax.swing.JPanel {
     private MainWindow main;
     /**
      * Creates new form Preferences
+     * @param main
      */
     public Preferences(MainWindow main) {
         
@@ -20,6 +22,7 @@ public class Preferences extends javax.swing.JPanel {
         
         setBounds(0, 0, 900, 900);
     }
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -32,15 +35,18 @@ public class Preferences extends javax.swing.JPanel {
 
         lblPreferences = new javax.swing.JLabel();
         btnBack = new javax.swing.JButton();
+        txtTempDir = new javax.swing.JTextField();
+        btnBrowseTempDir = new javax.swing.JButton();
+        txtYtdlpPath = new javax.swing.JTextField();
+        btnBrowseYtdlpPath = new javax.swing.JButton();
 
-        setOpaque(false);
-        setPreferredSize(new java.awt.Dimension(900, 900));
+        setPreferredSize(new java.awt.Dimension(1100, 700));
         setLayout(null);
 
         lblPreferences.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblPreferences.setText("Preferences");
         add(lblPreferences);
-        lblPreferences.setBounds(114, 31, 170, 16);
+        lblPreferences.setBounds(220, 30, 170, 16);
 
         btnBack.setText("Back");
         btnBack.setName(""); // NOI18N
@@ -51,19 +57,37 @@ public class Preferences extends javax.swing.JPanel {
             }
         });
         add(btnBack);
-        btnBack.setBounds(160, 120, 72, 23);
+        btnBack.setBounds(280, 490, 72, 23);
+        add(txtTempDir);
+        txtTempDir.setBounds(60, 100, 520, 22);
+
+        btnBrowseTempDir.setText("Browse...");
+        add(btnBrowseTempDir);
+        btnBrowseTempDir.setBounds(600, 100, 90, 23);
+
+        txtYtdlpPath.setToolTipText("");
+        add(txtYtdlpPath);
+        txtYtdlpPath.setBounds(60, 140, 520, 22);
+
+        btnBrowseYtdlpPath.setText("Browse...");
+        add(btnBrowseYtdlpPath);
+        btnBrowseYtdlpPath.setBounds(600, 140, 90, 23);
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackActionPerformed
         this.setVisible(false);
         main.showMainWindow();
         main.repaint();
-        
+
     }//GEN-LAST:event_btnBackActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnBack;
+    private javax.swing.JButton btnBrowseTempDir;
+    private javax.swing.JButton btnBrowseYtdlpPath;
     private javax.swing.JLabel lblPreferences;
+    private javax.swing.JTextField txtTempDir;
+    private javax.swing.JTextField txtYtdlpPath;
     // End of variables declaration//GEN-END:variables
 }

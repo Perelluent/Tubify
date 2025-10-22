@@ -57,16 +57,23 @@ public class MainWindow extends javax.swing.JFrame {
                     boolean remuxToMp4 = true;
 
                     List<String> cmd = new ArrayList<>();
+
                     cmd.add(YTDLP_PATH);
                     cmd.add(url);
                     cmd.add("-o");
                     cmd.add(outputPath);
-                    cmd.add("-f");
-                    cmd.add(formatSelector);
-                    cmd.add("--merge-output-format");
-                    cmd.add("mkv");
-                   
-                   
+                    cmd.add("--no-playlist");
+                    
+                    if (chkOnlyAudio.isSelected()) {
+                        cmd.add("-x");
+                        cmd.add("--audio-format");
+                        cmd.add("mp3");
+                    } else {
+                        cmd.add("-f");
+                        cmd.add(formatSelector);
+                        cmd.add("--merge-output-format");
+                        cmd.add("mkv");
+                    }
                     ProcessBuilder pb = new ProcessBuilder(cmd);
                     pb.redirectErrorStream(true);
                     Process process = pb.start();
