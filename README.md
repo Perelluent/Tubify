@@ -10,8 +10,8 @@ With this app, users can:
 - 🧹 Skip ads in downloaded media.
 
 ## Screenshots
-<img width="886" height="893" alt="image" src="https://github.com/user-attachments/assets/ff052bea-2f33-4c9f-9a52-cf5195d25ba4" />
-<img width="886" height="893" alt="image" src="https://github.com/user-attachments/assets/89a4b311-e96d-444b-b23e-f5a642d65bbb" />
+<img width="886" height="893" alt="image" src="https://github.com/user-attachments/assets/abc3663f-8a91-46d4-9db5-a6be0774839b" />
+
 
 ## 🧰 Setup Instructions
 
@@ -34,8 +34,11 @@ With this app, users can:
 ## 👨‍💻 Author & Credits
 
 **Author:** Pere Garcias
+
 **Project:** Tubify
+
 **External technologies and resources:**
+
 
 - [`yt-dlp`](https://github.com/yt-dlp/yt-dlp)
   
