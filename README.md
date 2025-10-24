@@ -11,6 +11,8 @@ With this app, users can:
 
 ## Screenshots
 <img width="886" height="893" alt="image" src="https://github.com/user-attachments/assets/abc3663f-8a91-46d4-9db5-a6be0774839b" />
+<img width="886" height="893" alt="image" src="https://github.com/user-attachments/assets/98532614-1641-49de-a74c-c9df81de3e2f" />
+
 
 
 ## 🧰 Setup Instructions
