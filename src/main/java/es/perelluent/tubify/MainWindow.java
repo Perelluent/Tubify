@@ -7,10 +7,13 @@ package es.perelluent.tubify;
 import java.awt.Desktop;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JFileChooser;
@@ -24,8 +27,10 @@ import javax.swing.SwingWorker;
 public class MainWindow extends javax.swing.JFrame {
 
     private final String YTDLP_PATH = System.getenv("LOCALAPPDATA") + "\\yt-dlp\\yt-dlp.exe";
-    private Preferences preferences = new Preferences(this);
+    private final Preferences preferences = new Preferences(this);
     private String lastDownloadedFilePath = null;
+    private final Properties props = new Properties();
+    private final String PROPERTIES_PATH = System.getProperty("user.home") + File.separator + "TubifySettings.properties";
 
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(MainWindow.class.getName());
 
@@ -53,11 +58,10 @@ public class MainWindow extends javax.swing.JFrame {
                     /*ProcessBuilder pb = new ProcessBuilder(YTDLP_PATH, txtUrl.getText(), "-o",
                             outputPath
                     );*/
+                    String ytdlpExePath = props.getProperty("ytdlpPath", YTDLP_PATH);
                     String url = txtUrl.getText().trim();
                     String selectedRes = (String) cmbResolucion.getSelectedItem();
                     String formatSelector = chooseResolution(selectedRes);
-
-                    boolean remuxToMp4 = true;
 
                     List<String> cmd = new ArrayList<>();
 
@@ -66,7 +70,7 @@ public class MainWindow extends javax.swing.JFrame {
                     cmd.add("-o");
                     cmd.add(outputPath);
                     cmd.add("--no-playlist");
-                    
+
                     if (chkOnlyAudio.isSelected()) {
                         cmd.add("-x");
                         cmd.add("--audio-format");
@@ -76,6 +80,20 @@ public class MainWindow extends javax.swing.JFrame {
                         cmd.add(formatSelector);
                         cmd.add("--merge-output-format");
                         cmd.add("mkv");
+                    }
+                    String speedLimit = props.getProperty("speedLimit", "");
+                    if (speedLimit != null && !speedLimit.trim().isEmpty()) {
+                        cmd.add("--limit-rate");
+                        cmd.add(speedLimit.trim());
+                    }
+                    String tempPath = props.getProperty("tempDirPath", "");
+                    if (tempPath != null && !tempPath.trim().isEmpty()) {
+                        cmd.add("--paths");
+                        cmd.add("temp:" + tempPath.trim());
+                    }
+                    boolean createM3u = Boolean.parseBoolean(props.getProperty("createM3u", "false"));
+                    if (createM3u) {
+                        cmd.add("--create-m3u");
                     }
                     ProcessBuilder pb = new ProcessBuilder(cmd);
                     pb.redirectErrorStream(true);
@@ -105,7 +123,7 @@ public class MainWindow extends javax.swing.JFrame {
                     } else {
                         publish("Download failed with exit code: " + exitCode);
                         lastDownloadedFilePath = null;
-}
+                    }
                 } catch (IOException | InterruptedException e) {
                     publish("Error: " + e.getMessage());
                 }
@@ -139,6 +157,37 @@ public class MainWindow extends javax.swing.JFrame {
             }
         };
         worker.execute();
+    }
+
+    public void savePreferences() {
+        try (FileOutputStream out = new FileOutputStream(PROPERTIES_PATH)) {
+            props.setProperty("ytdlpPath", preferences.getYtdlpPath());
+            props.setProperty("tempDirPath", preferences.getTempDirPath());
+            props.setProperty("speedLimit", preferences.getSelectedSpeedLimit());
+            props.setProperty("createM3u", String.valueOf(preferences.isM3uCreationEnabled()));
+
+            props.store(out, "Tubify Application Settings");
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Error saving preferences: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public void loadPreferences() {
+        File configFile = new File(PROPERTIES_PATH);
+        if (!configFile.exists()) {
+            preferences.setYtdlpPath(YTDLP_PATH);
+            return;
+        }
+
+        try (FileInputStream in = new FileInputStream(PROPERTIES_PATH)) {
+            props.load(in);
+            preferences.setYtdlpPath(props.getProperty("ytdlpPath", YTDLP_PATH));
+            preferences.setTempDirPath(props.getProperty("tempDirPath", ""));
+            preferences.setSelectedSpeedLimit(props.getProperty("speedLimit", ""));
+            preferences.setM3uCreationEnabled(Boolean.parseBoolean(props.getProperty("createM3u", "false")));
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Error loading preferences: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private String chooseResolution(String selected) {
@@ -350,7 +399,7 @@ public class MainWindow extends javax.swing.JFrame {
     private void btnDownloadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDownloadActionPerformed
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("Save as...");
-        chooser.setSelectedFile(new File(getTitle()));
+        chooser.setSelectedFile(new File("video"));
         int returnVal = chooser.showSaveDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File selectedFile = chooser.getSelectedFile();

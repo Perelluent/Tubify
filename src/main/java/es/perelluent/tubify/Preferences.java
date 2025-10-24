@@ -4,25 +4,77 @@
  */
 package es.perelluent.tubify;
 
+import java.io.File;
+import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
+
 /**
  *
  * @author Perelluent
  */
-
 public class Preferences extends javax.swing.JPanel {
+
     private MainWindow main;
+
     /**
      * Creates new form Preferences
+     *
      * @param main
      */
     public Preferences(MainWindow main) {
-        
+
         this.main = main;
         initComponents();
-        
+
         setBounds(0, 0, 900, 900);
     }
-    
+
+    //getters y setters
+    public String getYtdlpPath() {
+        return txtYtdlpPath.getText();
+    }
+
+    public void setYtdlpPath(String path) {
+        txtYtdlpPath.setText(path);
+    }
+
+    public String getTempDirPath() {
+        return txtTempDir.getText();
+    }
+
+    public void setTempDirPath(String path) {
+        txtTempDir.setText(path);
+    }
+
+    public boolean isM3uCreationEnabled() {
+        return chkCreateM3u.isSelected();
+    }
+
+    public void setM3uCreationEnabled(boolean enabled) {
+        chkCreateM3u.setSelected(enabled);
+    }
+
+    public String getSelectedSpeedLimit() {
+        if (radLimitSpeed500.isSelected()) {
+            return "500K";
+        }
+        if (radLimitSpeed2M.isSelected()) {
+            return "2M";
+        }
+        return "";
+    }
+
+    public void setSelectedSpeedLimit(String limit) {
+        if ("500K".equals(limit)) {
+            radLimitSpeed500.setSelected(true);
+        } else if ("2M".equals(limit)) {
+            radLimitSpeed2M.setSelected(true);
+        } else {
+            buttonGroup2.clearSelection();
+        }
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -33,12 +85,19 @@ public class Preferences extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        buttonGroup2 = new javax.swing.ButtonGroup();
         lblPreferences = new javax.swing.JLabel();
         btnBack = new javax.swing.JButton();
         txtTempDir = new javax.swing.JTextField();
         btnBrowseTempDir = new javax.swing.JButton();
         txtYtdlpPath = new javax.swing.JTextField();
         btnBrowseYtdlpPath = new javax.swing.JButton();
+        lblYtdlpPath = new javax.swing.JLabel();
+        lblDownloadPath1 = new javax.swing.JLabel();
+        chkCreateM3u = new javax.swing.JCheckBox();
+        radLimitSpeed500 = new javax.swing.JRadioButton();
+        radLimitSpeed2M = new javax.swing.JRadioButton();
+        lblLimitSpeed = new javax.swing.JLabel();
 
         setPreferredSize(new java.awt.Dimension(1100, 700));
         setLayout(null);
@@ -46,7 +105,7 @@ public class Preferences extends javax.swing.JPanel {
         lblPreferences.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblPreferences.setText("Preferences");
         add(lblPreferences);
-        lblPreferences.setBounds(220, 30, 170, 16);
+        lblPreferences.setBounds(270, 30, 170, 16);
 
         btnBack.setText("Back");
         btnBack.setName(""); // NOI18N
@@ -57,21 +116,57 @@ public class Preferences extends javax.swing.JPanel {
             }
         });
         add(btnBack);
-        btnBack.setBounds(280, 490, 72, 23);
+        btnBack.setBounds(330, 490, 72, 23);
         add(txtTempDir);
-        txtTempDir.setBounds(60, 100, 520, 22);
+        txtTempDir.setBounds(60, 150, 520, 22);
 
         btnBrowseTempDir.setText("Browse...");
+        btnBrowseTempDir.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBrowseTempDirActionPerformed(evt);
+            }
+        });
         add(btnBrowseTempDir);
-        btnBrowseTempDir.setBounds(600, 100, 90, 23);
+        btnBrowseTempDir.setBounds(600, 150, 90, 23);
 
         txtYtdlpPath.setToolTipText("");
         add(txtYtdlpPath);
-        txtYtdlpPath.setBounds(60, 140, 520, 22);
+        txtYtdlpPath.setBounds(60, 240, 520, 22);
 
         btnBrowseYtdlpPath.setText("Browse...");
+        btnBrowseYtdlpPath.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBrowseYtdlpPathActionPerformed(evt);
+            }
+        });
         add(btnBrowseYtdlpPath);
-        btnBrowseYtdlpPath.setBounds(600, 140, 90, 23);
+        btnBrowseYtdlpPath.setBounds(600, 240, 90, 23);
+
+        lblYtdlpPath.setText("YT-DLP Path");
+        add(lblYtdlpPath);
+        lblYtdlpPath.setBounds(60, 210, 110, 16);
+
+        lblDownloadPath1.setText("Download Temporary Files Path");
+        add(lblDownloadPath1);
+        lblDownloadPath1.setBounds(60, 120, 190, 16);
+
+        chkCreateM3u.setText("Create .m3u file for downloaded files");
+        add(chkCreateM3u);
+        chkCreateM3u.setBounds(60, 310, 520, 20);
+
+        buttonGroup2.add(radLimitSpeed500);
+        radLimitSpeed500.setText("500K");
+        add(radLimitSpeed500);
+        radLimitSpeed500.setBounds(70, 400, 48, 21);
+
+        buttonGroup2.add(radLimitSpeed2M);
+        radLimitSpeed2M.setText("2M");
+        add(radLimitSpeed2M);
+        radLimitSpeed2M.setBounds(70, 430, 40, 21);
+
+        lblLimitSpeed.setText("Limit Speed:");
+        add(lblLimitSpeed);
+        lblLimitSpeed.setBounds(70, 370, 100, 16);
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackActionPerformed
@@ -81,12 +176,41 @@ public class Preferences extends javax.swing.JPanel {
 
     }//GEN-LAST:event_btnBackActionPerformed
 
+    private void btnBrowseTempDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBrowseTempDirActionPerformed
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Select download directory...");
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        int returnVal = chooser.showOpenDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = chooser.getSelectedFile();
+            txtTempDir.setText(selectedFile.getAbsolutePath());
+        }
+    }//GEN-LAST:event_btnBrowseTempDirActionPerformed
+
+    private void btnBrowseYtdlpPathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBrowseYtdlpPathActionPerformed
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Select yt-dlp.exe file");
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        int returnVal = chooser.showOpenDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = chooser.getSelectedFile();
+            txtYtdlpPath.setText(selectedFile.getAbsolutePath());
+        }
+    }//GEN-LAST:event_btnBrowseYtdlpPathActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnBack;
     private javax.swing.JButton btnBrowseTempDir;
     private javax.swing.JButton btnBrowseYtdlpPath;
+    private javax.swing.ButtonGroup buttonGroup2;
+    private javax.swing.JCheckBox chkCreateM3u;
+    private javax.swing.JLabel lblDownloadPath1;
+    private javax.swing.JLabel lblLimitSpeed;
     private javax.swing.JLabel lblPreferences;
+    private javax.swing.JLabel lblYtdlpPath;
+    private javax.swing.JRadioButton radLimitSpeed2M;
+    private javax.swing.JRadioButton radLimitSpeed500;
     private javax.swing.JTextField txtTempDir;
     private javax.swing.JTextField txtYtdlpPath;
     // End of variables declaration//GEN-END:variables
