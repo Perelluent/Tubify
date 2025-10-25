@@ -363,6 +363,11 @@ public class MainWindow extends javax.swing.JFrame {
         mnuFile.setText("File");
 
         mniExit.setText("Exit");
+        mniExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mniExitActionPerformed(evt);
+            }
+        });
         mnuFile.add(mniExit);
 
         jMenuBar1.add(mnuFile);
@@ -456,6 +461,10 @@ public class MainWindow extends javax.swing.JFrame {
                     JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnPlayLastActionPerformed
+
+    private void mniExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniExitActionPerformed
+        System.exit(0);
+    }//GEN-LAST:event_mniExitActionPerformed
 
     /**
      * @param args the command line arguments
