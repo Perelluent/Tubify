@@ -4,6 +4,7 @@
  */
 package es.perelluent.tubify;
 
+import es.perelluent.tubify.dto.DownloadedFile;
 import java.awt.Desktop;
 import java.io.BufferedReader;
 import java.io.File;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
@@ -25,27 +27,32 @@ import javax.swing.SwingWorker;
  * @author Perelluent
  */
 public class MainWindow extends javax.swing.JFrame {
-
+    
     private final String YTDLP_PATH = System.getenv("LOCALAPPDATA") + "\\yt-dlp\\yt-dlp.exe";
     private final Preferences preferences = new Preferences(this);
     private String lastDownloadedFilePath = null;
     private final Properties props = new Properties();
     private final String PROPERTIES_PATH = System.getProperty("user.home") + File.separator + "TubifySettings.properties";
-
+    private DefaultListModel<DownloadedFile> dlmDownloaded;
+    
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(MainWindow.class.getName());
 
     /**
      * Creates new form MainWindow
      */
     public MainWindow() {
-
+        
         initComponents();
+        
+        dlmDownloaded = new DefaultListModel<>();
+        lstDownloaded.setModel(dlmDownloaded);
+        
         preferences.setBounds(0, 0, getWidth(), getHeight());
         preferences.setVisible(false);
         getContentPane().add(preferences);
-
+        
     }
-
+    
     private void downloadVideo(String outputPath) {
         //txaDebug.append("Trying to download " + txtUrl.getText() + "...\n\n");
         //txaDebug.append(YTDLP_PATH);
@@ -62,15 +69,15 @@ public class MainWindow extends javax.swing.JFrame {
                     String url = txtUrl.getText().trim();
                     String selectedRes = (String) cmbResolucion.getSelectedItem();
                     String formatSelector = chooseResolution(selectedRes);
-
+                    
                     List<String> cmd = new ArrayList<>();
-
+                    
                     cmd.add(YTDLP_PATH);
                     cmd.add(url);
                     cmd.add("-o");
                     cmd.add(outputPath);
                     cmd.add("--no-playlist");
-
+                    
                     if (chkOnlyAudio.isSelected()) {
                         cmd.add("-x");
                         cmd.add("--audio-format");
@@ -105,31 +112,38 @@ public class MainWindow extends javax.swing.JFrame {
                     while ((line = reader.readLine()) != null) {
                         System.out.println("doInBackground> 1 line published. In thread " + Thread.currentThread().getName());
                         System.out.println("\t" + line);
-
+                        
                         publish(line);
                     }
-
+                    
                     int exitCode = process.waitFor();
                     if (exitCode == 0) {
                         publish("Download completed successfully!");
-
+                        
+                        String finalFilePath;
                         if (chkOnlyAudio.isSelected()) {
-                            lastDownloadedFilePath = outputPath.replace(".%(ext)s", ".mp3");
+                            finalFilePath = outputPath.replace(".%(ext)s", ".mp3");
                         } else {
-                            lastDownloadedFilePath = outputPath.replace(".%(ext)s", ".mkv");
+                            finalFilePath = outputPath.replace(".%(ext)s", ".mkv");
                         }
+                        lastDownloadedFilePath = finalFilePath;
                         publish("File saved at: " + lastDownloadedFilePath);
-
+                        try {
+                            addFileToLibrary(finalFilePath);
+                        } catch (IOException e) {
+                            publish("Error al añadir a la lista: " + e.getMessage());
+                        }
+                        
                     } else {
                         publish("Download failed with exit code: " + exitCode);
-                        lastDownloadedFilePath = null;
+                        
                     }
                 } catch (IOException | InterruptedException e) {
                     publish("Error: " + e.getMessage());
                 }
                 return null;
             }
-
+            
             @Override
             protected void process(List<String> chunks) {
                 System.out.println("Process> " + chunks.size() + " lines recieved. In thread " + Thread.currentThread());
@@ -138,12 +152,12 @@ public class MainWindow extends javax.swing.JFrame {
                     txaDownloadResult.append(line + "\n");
                     Pattern pattern = Pattern.compile("\\[download\\]\\s+(\\d+\\.\\d+)%");
                     Matcher matcher = pattern.matcher(line);
-
+                    
                     if (matcher.find()) {
                         try {
                             double percentage = Double.parseDouble(matcher.group(1));
                             int valor = (int) percentage;
-
+                            
                             if (valor >= 0 && valor <= 100) {
                                 prg1.setValue(valor);
                             }
@@ -151,34 +165,34 @@ public class MainWindow extends javax.swing.JFrame {
                             System.err.println("Error parsing progress percentage: " + e.getMessage());
                         }
                     }
-
+                    
                 }
-
+                
             }
         };
         worker.execute();
     }
-
+    
     public void savePreferences() {
         try (FileOutputStream out = new FileOutputStream(PROPERTIES_PATH)) {
             props.setProperty("ytdlpPath", preferences.getYtdlpPath());
             props.setProperty("tempDirPath", preferences.getTempDirPath());
             props.setProperty("speedLimit", preferences.getSelectedSpeedLimit());
             props.setProperty("createM3u", String.valueOf(preferences.isM3uCreationEnabled()));
-
+            
             props.store(out, "Tubify Application Settings");
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, "Error saving preferences: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-
+    
     public void loadPreferences() {
         File configFile = new File(PROPERTIES_PATH);
         if (!configFile.exists()) {
             preferences.setYtdlpPath(YTDLP_PATH);
             return;
         }
-
+        
         try (FileInputStream in = new FileInputStream(PROPERTIES_PATH)) {
             props.load(in);
             preferences.setYtdlpPath(props.getProperty("ytdlpPath", YTDLP_PATH));
@@ -189,7 +203,7 @@ public class MainWindow extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "Error loading preferences: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-
+    
     private String chooseResolution(String selected) {
         if (selected == null) {
             return "bestvideo+bestaudio/best";
@@ -204,16 +218,26 @@ public class MainWindow extends javax.swing.JFrame {
         }
         return "bestvideo+bestaudio/best";
     }
-
+    
     public void showMainWindow() {
         pnlMain.setVisible(true);
         preferences.setVisible(false);
     }
-
+    
     public void showPreferencesWindow() {
         pnlMain.setVisible(false);
         preferences.setVisible(true);
         preferences.repaint();
+    }
+    
+    private void addFileToLibrary(String finalFilePath) throws IOException {
+        File file = new File(finalFilePath);
+        if (file.exists()) {
+            DownloadedFile newDownloadedFile = new DownloadedFile(file);            
+            dlmDownloaded.addElement(newDownloadedFile);            
+        } else {
+            throw new IOException("El fichero final no se encontró en " + finalFilePath);
+        }
     }
 
     /**
@@ -236,6 +260,9 @@ public class MainWindow extends javax.swing.JFrame {
         cmbResolucion = new javax.swing.JComboBox<>();
         chkOnlyAudio = new javax.swing.JCheckBox();
         btnPlayLast = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        lstDownloaded = new javax.swing.JList<>();
+        lblDownloadedFiles = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         mnuFile = new javax.swing.JMenu();
         mniExit = new javax.swing.JMenuItem();
@@ -295,6 +322,11 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
 
+        jScrollPane2.setViewportView(lstDownloaded);
+
+        lblDownloadedFiles.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblDownloadedFiles.setText("Downloaded Files");
+
         javax.swing.GroupLayout pnlMainLayout = new javax.swing.GroupLayout(pnlMain);
         pnlMain.setLayout(pnlMainLayout);
         pnlMainLayout.setHorizontalGroup(
@@ -306,54 +338,57 @@ public class MainWindow extends javax.swing.JFrame {
             .addGroup(pnlMainLayout.createSequentialGroup()
                 .addGap(52, 52, 52)
                 .addGroup(pnlMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(pnlMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addComponent(txtUrl, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(pnlMainLayout.createSequentialGroup()
+                            .addComponent(btnDownload, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(pnlMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(cmbResolucion, javax.swing.GroupLayout.PREFERRED_SIZE, 173, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGroup(pnlMainLayout.createSequentialGroup()
+                                    .addGap(37, 37, 37)
+                                    .addComponent(chkOnlyAudio)))))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(prg1, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(pnlMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(pnlMainLayout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(328, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlMainLayout.createSequentialGroup()
-                        .addGroup(pnlMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGap(63, 63, 63)
+                        .addGroup(pnlMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btnPlayLast, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 259, Short.MAX_VALUE)
                             .addGroup(pnlMainLayout.createSequentialGroup()
-                                .addComponent(prg1, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(btnPlayLast, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, pnlMainLayout.createSequentialGroup()
-                                .addGroup(pnlMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addComponent(txtUrl, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGroup(pnlMainLayout.createSequentialGroup()
-                                        .addComponent(btnDownload, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addGroup(pnlMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(cmbResolucion, javax.swing.GroupLayout.PREFERRED_SIZE, 173, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addGroup(pnlMainLayout.createSequentialGroup()
-                                                .addGap(37, 37, 37)
-                                                .addComponent(chkOnlyAudio)))))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 77, Short.MAX_VALUE)
-                                .addComponent(btnPreferences, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(81, 81, 81))))
+                                .addComponent(btnPreferences, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE)))
+                        .addContainerGap())
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlMainLayout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(lblDownloadedFiles, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(62, 62, 62))))
         );
         pnlMainLayout.setVerticalGroup(
             pnlMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlMainLayout.createSequentialGroup()
                 .addGap(28, 28, 28)
                 .addComponent(lbl1)
-                .addGroup(pnlMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(pnlMainLayout.createSequentialGroup()
-                        .addGap(31, 31, 31)
-                        .addComponent(btnPreferences))
-                    .addGroup(pnlMainLayout.createSequentialGroup()
-                        .addGap(18, 18, 18)
-                        .addComponent(txtUrl, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(18, 18, 18)
                 .addGroup(pnlMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtUrl, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnPreferences))
+                .addGap(31, 31, 31)
+                .addGroup(pnlMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnDownload, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cmbResolucion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cmbResolucion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnPlayLast))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(chkOnlyAudio)
-                .addGap(41, 41, 41)
+                .addComponent(chkOnlyAudio, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(pnlMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(prg1, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnPlayLast))
-                .addGap(26, 26, 26)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblDownloadedFiles))
+                .addGap(18, 18, 18)
+                .addGroup(pnlMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 375, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1))
                 .addContainerGap(102, Short.MAX_VALUE))
         );
 
@@ -409,7 +444,7 @@ public class MainWindow extends javax.swing.JFrame {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File selectedFile = chooser.getSelectedFile();
             String outputPath = selectedFile.getAbsolutePath();
-
+            
             if (!outputPath.contains("%(ext)s")) {    //para añadir la extensión .mp4
                 outputPath = outputPath + ".%(ext)s";
             }
@@ -442,10 +477,10 @@ public class MainWindow extends javax.swing.JFrame {
                     JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-
+        
         try {
             File fileToOpen = new File(lastDownloadedFilePath);
-
+            
             if (Desktop.isDesktopSupported() && fileToOpen.exists()) {
                 Desktop.getDesktop().open(fileToOpen);
             } else {
@@ -499,7 +534,10 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JComboBox<String> cmbResolucion;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel lbl1;
+    private javax.swing.JLabel lblDownloadedFiles;
+    private javax.swing.JList<es.perelluent.tubify.dto.DownloadedFile> lstDownloaded;
     private javax.swing.JMenuItem mniAbout;
     private javax.swing.JMenuItem mniExit;
     private javax.swing.JMenuItem mniPreferences;
