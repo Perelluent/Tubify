@@ -30,10 +30,11 @@ public class MainWindow extends javax.swing.JFrame {
     
     private final String YTDLP_PATH = System.getenv("LOCALAPPDATA") + "\\yt-dlp\\yt-dlp.exe";
     private final Preferences preferences = new Preferences(this);
+    private final LibraryPanel libraryPanel = new LibraryPanel(this);
     private String lastDownloadedFilePath = null;
     private final Properties props = new Properties();
     private final String PROPERTIES_PATH = System.getProperty("user.home") + File.separator + "TubifySettings.properties";
-    private DefaultListModel<DownloadedFile> dlmDownloaded;
+    private final DefaultListModel<DownloadedFile> dlmDownloaded;
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(MainWindow.class.getName());
 
@@ -49,7 +50,9 @@ public class MainWindow extends javax.swing.JFrame {
         
         preferences.setBounds(0, 0, getWidth(), getHeight());
         preferences.setVisible(false);
+        libraryPanel.setVisible(false);
         getContentPane().add(preferences);
+        getContentPane().add(libraryPanel);
         
     }
     
@@ -131,7 +134,7 @@ public class MainWindow extends javax.swing.JFrame {
                         try {
                             addFileToLibrary(finalFilePath);
                         } catch (IOException e) {
-                            publish("Error al añadir a la lista: " + e.getMessage());
+                            publish("Error adding file to the library: " + e.getMessage());
                         }
                         
                     } else {
@@ -230,13 +233,20 @@ public class MainWindow extends javax.swing.JFrame {
         preferences.repaint();
     }
     
+    public void showLibraryWindow() {
+        pnlMain.setVisible(false);
+        libraryPanel.setModelLibrary(dlmDownloaded);
+        libraryPanel.setVisible(true);
+        libraryPanel.repaint();
+    }
+    
     private void addFileToLibrary(String finalFilePath) throws IOException {
         File file = new File(finalFilePath);
         if (file.exists()) {
             DownloadedFile newDownloadedFile = new DownloadedFile(file);            
             dlmDownloaded.addElement(newDownloadedFile);            
         } else {
-            throw new IOException("El fichero final no se encontró en " + finalFilePath);
+            throw new IOException("The file could not be found in: " + finalFilePath);
         }
     }
 
@@ -263,6 +273,7 @@ public class MainWindow extends javax.swing.JFrame {
         jScrollPane2 = new javax.swing.JScrollPane();
         lstDownloaded = new javax.swing.JList<>();
         lblDownloadedFiles = new javax.swing.JLabel();
+        btnLibrary = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         mnuFile = new javax.swing.JMenu();
         mniExit = new javax.swing.JMenuItem();
@@ -327,6 +338,13 @@ public class MainWindow extends javax.swing.JFrame {
         lblDownloadedFiles.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblDownloadedFiles.setText("Downloaded Files");
 
+        btnLibrary.setText("Go to Library");
+        btnLibrary.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnLibraryActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout pnlMainLayout = new javax.swing.GroupLayout(pnlMain);
         pnlMain.setLayout(pnlMainLayout);
         pnlMainLayout.setHorizontalGroup(
@@ -355,10 +373,11 @@ public class MainWindow extends javax.swing.JFrame {
                         .addGap(63, 63, 63)
                         .addGroup(pnlMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(btnPlayLast, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 259, Short.MAX_VALUE)
-                            .addGroup(pnlMainLayout.createSequentialGroup()
-                                .addComponent(btnPreferences, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 0, Short.MAX_VALUE)))
+                            .addComponent(jScrollPane2)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlMainLayout.createSequentialGroup()
+                                .addComponent(btnPreferences, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(btnLibrary, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addContainerGap())
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlMainLayout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -373,7 +392,8 @@ public class MainWindow extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addGroup(pnlMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(txtUrl, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnPreferences))
+                    .addComponent(btnPreferences)
+                    .addComponent(btnLibrary))
                 .addGap(31, 31, 31)
                 .addGroup(pnlMainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnDownload, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -501,6 +521,10 @@ public class MainWindow extends javax.swing.JFrame {
         System.exit(0);
     }//GEN-LAST:event_mniExitActionPerformed
 
+    private void btnLibraryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLibraryActionPerformed
+        showLibraryWindow();
+    }//GEN-LAST:event_btnLibraryActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -528,6 +552,7 @@ public class MainWindow extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnDownload;
+    private javax.swing.JButton btnLibrary;
     private javax.swing.JButton btnPlayLast;
     private javax.swing.JButton btnPreferences;
     private javax.swing.JCheckBox chkOnlyAudio;

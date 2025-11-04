@@ -7,6 +7,8 @@ package es.perelluent.tubify.dto;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -34,6 +36,10 @@ public class DownloadedFile {
         this.fileSize = file.length();
         this.downloadDate = LocalDateTime.now();
     }
+
+    public DownloadedFile() {
+    }
+    
 
     public String getFileName() {
         return fileName;
@@ -80,6 +86,5 @@ public class DownloadedFile {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         String dateFormat = downloadDate.format(formatter);
         return fileName + " - " + dateFormat;
-    }
-    
+    }  
 }

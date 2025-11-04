@@ -5,10 +5,7 @@
 package es.perelluent.tubify;
 
 import java.io.File;
-import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
 
 /**
  *
@@ -16,7 +13,7 @@ import javax.swing.JTextField;
  */
 public class Preferences extends javax.swing.JPanel {
 
-    private MainWindow main;
+    private final MainWindow main;
 
     /**
      * Creates new form Preferences
