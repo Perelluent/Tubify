@@ -14,6 +14,7 @@ import javax.swing.table.AbstractTableModel;
  */
 public class LibraryTableModel extends AbstractTableModel{
     private final DefaultListModel<DownloadedFile> listDownloadedFilesModel;
+    private final String[] columnNames = {"File Name","Size","Type","Download Date"};
     
     public LibraryTableModel(DefaultListModel<DownloadedFile> listDownloadedFile) {
         this.listDownloadedFilesModel = listDownloadedFile;
@@ -46,4 +47,8 @@ public class LibraryTableModel extends AbstractTableModel{
         }
     }
 
+    @Override
+    public String getColumnName(int column) {
+        return columnNames[column];
+    }
 }
