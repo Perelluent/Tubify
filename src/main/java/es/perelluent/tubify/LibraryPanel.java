@@ -7,6 +7,7 @@ package es.perelluent.tubify;
 import es.perelluent.tubify.dto.DownloadedFile;
 import es.perelluent.tubify.dto.LibraryTableModel;
 import javax.swing.DefaultListModel;
+import javax.swing.table.TableRowSorter;
 
 /**
  *
@@ -29,8 +30,12 @@ public class LibraryPanel extends javax.swing.JPanel {
     }
     
     public void setModelLibrary(DefaultListModel<DownloadedFile> libraryModel) {
+        
+        LibraryTableModel ltb = new LibraryTableModel(libraryModel);
         this.library = new LibraryTableModel(libraryModel);
         tblLibrary.setModel(library);
+        TableRowSorter<LibraryTableModel> sorter = new TableRowSorter<>(library);
+        tblLibrary.setRowSorter(sorter);
     }
 
     /**
