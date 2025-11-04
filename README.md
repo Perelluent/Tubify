@@ -10,9 +10,9 @@ With this app, users can:
 - 🧹 Skip ads in downloaded media.
 
 ## Screenshots
-<img width="886" height="893" alt="image" src="https://github.com/user-attachments/assets/3ce5a075-87fe-4cd9-8141-54293ac2e789" />
+<img width="886" height="893" alt="image" src="https://github.com/user-attachments/assets/bc28096e-e63b-466a-a085-dd27cdabf73d" />
 <img width="886" height="893" alt="image" src="https://github.com/user-attachments/assets/98532614-1641-49de-a74c-c9df81de3e2f" />
-
+<img width="886" height="893" alt="image" src="https://github.com/user-attachments/assets/048deaac-65ac-48c9-a633-0e770705e35d" />
 
 
 ## 🧰 Setup Instructions
