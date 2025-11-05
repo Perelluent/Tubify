@@ -78,7 +78,6 @@ public class MainWindow extends javax.swing.JFrame {
                     String ytdlpExePath = props.getProperty("ytdlpPath", YTDLP_PATH);
                     String url = txtUrl.getText().trim();
                     String selectedRes = (String) cmbResolucion.getSelectedItem();
-                    String formatSelector = chooseResolution(selectedRes);
 
                     List<String> cmd = new ArrayList<>();
 
@@ -91,12 +90,16 @@ public class MainWindow extends javax.swing.JFrame {
                     if (chkOnlyAudio.isSelected()) {
                         cmd.add("-x");
                         cmd.add("--audio-format");
-                        cmd.add("mp3");
+                        String selectedAudioFormat = (String) cmbAudioFormat.getSelectedItem();
+                        cmd.add(selectedAudioFormat);
+                        
                     } else {
+                        String selectedResolution = (String) cmbResolucion.getSelectedItem();
+                        String formatSelector = chooseResolution(selectedResolution);
                         cmd.add("-f");
                         cmd.add(formatSelector);
                         cmd.add("--merge-output-format");
-                        cmd.add("mkv");
+                        cmd.add(selectedResolution);
                     }
                     String speedLimit = props.getProperty("speedLimit", "");
                     if (speedLimit != null && !speedLimit.trim().isEmpty()) {
@@ -332,6 +335,7 @@ public class MainWindow extends javax.swing.JFrame {
         lstDownloaded = new javax.swing.JList<>();
         lblDownloadedFiles = new javax.swing.JLabel();
         btnLibrary = new javax.swing.JButton();
+        cmbAudioFormat = new javax.swing.JComboBox<>();
         jMenuBar1 = new javax.swing.JMenuBar();
         mnuFile = new javax.swing.JMenu();
         mniExit = new javax.swing.JMenuItem();
@@ -391,7 +395,7 @@ public class MainWindow extends javax.swing.JFrame {
 
         cmbResolucion.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "FullHD", "720p", "480p" }));
         pnlMain.add(cmbResolucion);
-        cmbResolucion.setBounds(219, 124, 173, 22);
+        cmbResolucion.setBounds(220, 120, 173, 22);
 
         chkOnlyAudio.setText("Only Audio");
         chkOnlyAudio.addActionListener(new java.awt.event.ActionListener() {
@@ -400,7 +404,7 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
         pnlMain.add(chkOnlyAudio);
-        chkOnlyAudio.setBounds(256, 168, 83, 31);
+        chkOnlyAudio.setBounds(60, 170, 83, 31);
 
         btnPlayLast.setText("Play from List");
         btnPlayLast.addActionListener(new java.awt.event.ActionListener() {
@@ -430,8 +434,13 @@ public class MainWindow extends javax.swing.JFrame {
         pnlMain.add(btnLibrary);
         btnLibrary.setBounds(594, 62, 120, 23);
 
+        cmbAudioFormat.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "mp3", "wav", "m4a", "best" }));
+        cmbAudioFormat.setEnabled(false);
+        pnlMain.add(cmbAudioFormat);
+        cmbAudioFormat.setBounds(220, 170, 170, 22);
+
         getContentPane().add(pnlMain);
-        pnlMain.setBounds(0, 0, 720, 720);
+        pnlMain.setBounds(0, 0, 820, 720);
 
         mnuFile.setText("File");
 
@@ -499,7 +508,10 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_mniPreferencesActionPerformed
 
     private void chkOnlyAudioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkOnlyAudioActionPerformed
-        // TODO add your handling code here:
+        boolean isAudioOnly = chkOnlyAudio.isSelected();
+        
+        cmbAudioFormat.setEnabled(isAudioOnly);
+        cmbResolucion.setEnabled(!isAudioOnly);
     }//GEN-LAST:event_chkOnlyAudioActionPerformed
 
     private void mniAboutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniAboutActionPerformed
@@ -583,6 +595,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JButton btnPlayLast;
     private javax.swing.JButton btnPreferences;
     private javax.swing.JCheckBox chkOnlyAudio;
+    private javax.swing.JComboBox<String> cmbAudioFormat;
     private javax.swing.JComboBox<String> cmbResolucion;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JScrollPane jScrollPane1;
