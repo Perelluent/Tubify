@@ -5,6 +5,9 @@
 package es.perelluent.tubify.dto;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -33,6 +36,13 @@ public class DownloadedFile {
         this.filePath = file.getAbsolutePath();
         this.fileSize = file.length();
         this.downloadDate = LocalDateTime.now();
+
+        try {
+            Path path = file.toPath();
+            this.mimeType = Files.probeContentType(path);
+        } catch (IOException ex) {
+            System.getLogger(DownloadedFile.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
     }
 
     public DownloadedFile() {
