@@ -6,6 +6,8 @@ package es.perelluent.tubify;
 
 import es.perelluent.tubify.dto.DownloadedFile;
 import es.perelluent.tubify.dto.LibraryTableModel;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.DefaultListModel;
 import javax.swing.table.TableRowSorter;
 
@@ -14,28 +16,73 @@ import javax.swing.table.TableRowSorter;
  * @author morda
  */
 public class LibraryPanel extends javax.swing.JPanel {
-    
+
     private final MainWindow main;
     private LibraryTableModel library;
 
     /**
      * Creates new form LibraryPanel
+     *
      * @param main
      */
     public LibraryPanel(MainWindow main) {
         this.main = main;
-        
+
         initComponents();
         setBounds(0, 0, 900, 900);
-    }
-    
-    public void setModelLibrary(DefaultListModel<DownloadedFile> libraryModel) {
+
+        cmbFilter.addItem(new FilterCategory("Show All", ""));
+        cmbFilter.addItem(new FilterCategory("Videos Only", "video"));
+        cmbFilter.addItem(new FilterCategory("Audio Only", "audio"));
         
+        cmbFilter.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                FilterCategory selected = (FilterCategory) cmbFilter.getSelectedItem();
+                if (library != null) {
+                    library.filterByType(selected.getFilterValue());
+                }
+            }
+            
+        });
+        
+        btnDelete.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                btnDeleteActionPerformed(e);
+            }
+            
+        });
+    }
+
+    public void setModelLibrary(DefaultListModel<DownloadedFile> libraryModel) {
+
         LibraryTableModel ltb = new LibraryTableModel(libraryModel);
         this.library = new LibraryTableModel(libraryModel);
         tblLibrary.setModel(library);
         TableRowSorter<LibraryTableModel> sorter = new TableRowSorter<>(library);
         tblLibrary.setRowSorter(sorter);
+    }
+
+    class FilterCategory {
+
+        private final String displayName;
+        private final String FilterValue;
+
+        public FilterCategory(String displayName, String FilterValue) {
+            this.displayName = displayName;
+            this.FilterValue = FilterValue;
+        }
+
+        public String getFilterValue() {
+            return FilterValue;
+        }
+
+        @Override
+        public String toString() {
+            return displayName;
+        }
+
     }
 
     /**
@@ -50,6 +97,10 @@ public class LibraryPanel extends javax.swing.JPanel {
         btnBack = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         tblLibrary = new javax.swing.JTable();
+        btnDelete = new javax.swing.JButton();
+        lblFilter = new javax.swing.JLabel();
+        lblMediaLibrary = new javax.swing.JLabel();
+        cmbFilter = new javax.swing.JComboBox<>();
 
         setPreferredSize(new java.awt.Dimension(1100, 700));
         setLayout(null);
@@ -77,7 +128,29 @@ public class LibraryPanel extends javax.swing.JPanel {
         jScrollPane1.setViewportView(tblLibrary);
 
         add(jScrollPane1);
-        jScrollPane1.setBounds(10, 90, 790, 540);
+        jScrollPane1.setBounds(10, 90, 790, 290);
+
+        btnDelete.setText("Delete File");
+        btnDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteActionPerformed(evt);
+            }
+        });
+        add(btnDelete);
+        btnDelete.setBounds(10, 410, 110, 23);
+
+        lblFilter.setText("Filter");
+        add(lblFilter);
+        lblFilter.setBounds(20, 20, 41, 16);
+
+        lblMediaLibrary.setFont(new java.awt.Font("sansserif", 0, 30)); // NOI18N
+        lblMediaLibrary.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblMediaLibrary.setText("MEDIA LIBRARY");
+        add(lblMediaLibrary);
+        lblMediaLibrary.setBounds(260, 30, 290, 40);
+
+        add(cmbFilter);
+        cmbFilter.setBounds(20, 50, 72, 22);
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackActionPerformed
@@ -86,10 +159,41 @@ public class LibraryPanel extends javax.swing.JPanel {
         main.repaint();
     }//GEN-LAST:event_btnBackActionPerformed
 
+    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
+        int viewRow = tblLibrary.getSelectedRow();
+
+    if (viewRow == -1) {
+        javax.swing.JOptionPane.showMessageDialog(this, "Please select a file to delete.", "No file selected", javax.swing.JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+    int modelRow = tblLibrary.convertRowIndexToModel(viewRow);
+
+    DownloadedFile fileToDelete = library.getFileAt(modelRow);
+
+    if (fileToDelete == null) return;
+
+    int choice = javax.swing.JOptionPane.showConfirmDialog(
+            this, 
+            "Are you sure you want to delete this file from your disk?\n" + fileToDelete.getFileName(), 
+            "Confirm Deletion", 
+            javax.swing.JOptionPane.YES_NO_OPTION, 
+            javax.swing.JOptionPane.QUESTION_MESSAGE);
+
+    if (choice == javax.swing.JOptionPane.YES_OPTION) {
+        fileToDelete.deleteFromDisk();
+        library.removeFile(fileToDelete);
+    }
+
+    }//GEN-LAST:event_btnDeleteActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnBack;
+    private javax.swing.JButton btnDelete;
+    private javax.swing.JComboBox<FilterCategory> cmbFilter;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel lblFilter;
+    private javax.swing.JLabel lblMediaLibrary;
     private javax.swing.JTable tblLibrary;
     // End of variables declaration//GEN-END:variables
 }

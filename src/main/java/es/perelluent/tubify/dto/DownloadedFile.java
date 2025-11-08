@@ -65,8 +65,8 @@ public class DownloadedFile {
         this.filePath = filePath;
     }
 
-    public long getFileSize() {
-        return fileSize;
+    public String getFileSize() {
+        return fileSize + " MB";
     }
 
     public void setFileSize(long fileSize) {
@@ -81,18 +81,28 @@ public class DownloadedFile {
         this.mimeType = mimeType;
     }
 
-    public LocalDateTime getDownloadDate() {
-        return downloadDate;
+    public String getDownloadDate() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm");
+        String dateFormat = downloadDate.format(formatter);
+        return dateFormat;
     }
 
     public void setDownloadDate(LocalDateTime downloadDate) {
         this.downloadDate = downloadDate;
     }
+    
+    public boolean deleteFromDisk() {
+    try {
+        File f = new File(this.filePath);
+        return f.delete();
+    } catch (Exception e) {
+        System.err.println("Error: " + e.getMessage());
+        return false;
+    }
+}
 
     @Override
     public String toString() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        String dateFormat = downloadDate.format(formatter);
-        return fileName + " - " + dateFormat;
+        return fileName;
     }  
 }

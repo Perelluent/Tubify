@@ -48,7 +48,7 @@ public class MainWindow extends javax.swing.JFrame {
 
         dlmDownloaded = new DefaultListModel<>();
         lstDownloaded.setModel(dlmDownloaded);
-        
+
         loadPreferences();
         scanLibraryFolder();
 
@@ -65,9 +65,9 @@ public class MainWindow extends javax.swing.JFrame {
         //txaDebug.append(YTDLP_PATH);
         SwingWorker<Void, String> worker;
         worker = new SwingWorker<Void, String>() {
-            
+
             private boolean downloadSucceeded = false;
-            
+
             @Override
             protected Void doInBackground() throws Exception {
                 try {
@@ -81,25 +81,25 @@ public class MainWindow extends javax.swing.JFrame {
 
                     List<String> cmd = new ArrayList<>();
 
-                    cmd.add(YTDLP_PATH);
+                    cmd.add(ytdlpExePath);
                     cmd.add(url);
                     cmd.add("-o");
                     cmd.add(outputPath);
                     cmd.add("--no-playlist");
 
                     if (chkOnlyAudio.isSelected()) {
+                        String selectedAudioFormat = (String) cmbAudioFormat.getSelectedItem();
                         cmd.add("-x");
                         cmd.add("--audio-format");
-                        String selectedAudioFormat = (String) cmbAudioFormat.getSelectedItem();
                         cmd.add(selectedAudioFormat);
-                        
+
                     } else {
                         String selectedResolution = (String) cmbResolucion.getSelectedItem();
                         String formatSelector = chooseResolution(selectedResolution);
                         cmd.add("-f");
                         cmd.add(formatSelector);
                         cmd.add("--merge-output-format");
-                        cmd.add(selectedResolution);
+                        cmd.add("mp4");
                     }
                     String speedLimit = props.getProperty("speedLimit", "");
                     if (speedLimit != null && !speedLimit.trim().isEmpty()) {
@@ -133,14 +133,6 @@ public class MainWindow extends javax.swing.JFrame {
                     if (exitCode == 0) {
                         publish("Download completed successfully!");
 
-                        String finalFilePath;
-                        if (chkOnlyAudio.isSelected()) {
-                            finalFilePath = outputPath.replace(".%(ext)s", ".mp3");
-                        } else {
-                            finalFilePath = outputPath.replace(".%(ext)s", ".mkv");
-                        }
-                        lastDownloadedFilePath = finalFilePath;
-                        publish("File saved at: " + lastDownloadedFilePath);
                         downloadSucceeded = true;
 
                     } else {
@@ -174,26 +166,23 @@ public class MainWindow extends javax.swing.JFrame {
                             System.err.println("Error parsing progress percentage: " + e.getMessage());
                         }
                     }
-
                 }
-                
-
             }
 
             @Override
             protected void done() {
                 try {
-                get();
-                
-                if (downloadSucceeded) {
-                    scanLibraryFolder();
-                    publish("Library refreshed.");
+                    get();
+
+                    if (downloadSucceeded) {
+                        scanLibraryFolder();
+                        publish("Library refreshed.");
+                    }
+                } catch (Exception e) {
+                    publish("Error on worker completion: " + e.getMessage());
                 }
-            } catch (Exception e) {
-                publish("Error on worker completion: " + e.getMessage());
             }
-        } 
-            
+
         };
         worker.execute();
     }
@@ -275,41 +264,45 @@ public class MainWindow extends javax.swing.JFrame {
             throw new IOException("The file could not be found in: " + finalFilePath);
         }
     }
+
     private void scanLibraryFolder() {
 
-    String libraryPath = props.getProperty("libraryPath");
+        String libraryPath = props.getProperty("libraryPath");
 
-    if (libraryPath == null || libraryPath.trim().isEmpty()) {
-        System.err.println("No se puede escanear: la ruta de la biblioteca no está configurada.");
-        return;
-    }
+        if (libraryPath == null || libraryPath.trim().isEmpty()) {
+            System.err.println("No se puede escanear: la ruta de la biblioteca no está configurada.");
+            return;
+        }
 
-    File libraryDir = new File(libraryPath);
-    if (!libraryDir.exists() || !libraryDir.isDirectory()) {
-        System.err.println("No se puede escanear: la ruta no existe o no es una carpeta.");
-        return;
-    }
+        File libraryDir = new File(libraryPath);
+        if (!libraryDir.exists() || !libraryDir.isDirectory()) {
+            System.err.println("No se puede escanear: la ruta no existe o no es una carpeta.");
+            return;
+        }
 
-    dlmDownloaded.clear();
+        dlmDownloaded.clear();
 
-    File[] filesInDir = libraryDir.listFiles();
-    if (filesInDir == null) return;
+        File[] filesInDir = libraryDir.listFiles();
+        if (filesInDir == null) {
+            return;
+        }
 
-    for (File file : filesInDir) {
-        if (file.isFile()) {
+        for (File file : filesInDir) {
+            if (file.isFile()) {
 
-            String name = file.getName().toLowerCase();
-            if (name.endsWith(".mkv") || name.endsWith(".mp4") || name.endsWith(".mp3")) {
-                try {
-                    DownloadedFile df = new DownloadedFile(file);
-                    dlmDownloaded.addElement(df);
-                } catch (Exception e) {
-                    System.err.println("Error: " + file.getName());
+                String name = file.getName().toLowerCase();
+                if (name.endsWith(".mkv") || name.endsWith(".mp4") || name.endsWith(".mp3")
+                        || name.endsWith(".wav") || name.endsWith(".m4a")) {
+                    try {
+                        DownloadedFile df = new DownloadedFile(file);
+                        dlmDownloaded.addElement(df);
+                    } catch (Exception e) {
+                        System.err.println("Error: " + file.getName());
+                    }
                 }
             }
         }
     }
-}
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -509,7 +502,7 @@ public class MainWindow extends javax.swing.JFrame {
 
     private void chkOnlyAudioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkOnlyAudioActionPerformed
         boolean isAudioOnly = chkOnlyAudio.isSelected();
-        
+
         cmbAudioFormat.setEnabled(isAudioOnly);
         cmbResolucion.setEnabled(!isAudioOnly);
     }//GEN-LAST:event_chkOnlyAudioActionPerformed
@@ -568,26 +561,26 @@ public class MainWindow extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-    /* Set the Nimbus look and feel */
-    //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-    /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-     */
-    try {
-        for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-            if ("Nimbus".equals(info.getName())) {
-                javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                break;
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
             }
+        } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
+            logger.log(java.util.logging.Level.SEVERE, null, ex);
         }
-    } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
-        logger.log(java.util.logging.Level.SEVERE, null, ex);
-    }
-    //</editor-fold>
+        //</editor-fold>
 
-    /* Create and display the form */
-    java.awt.EventQueue.invokeLater(() -> new MainWindow().setVisible(true));
-}
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(() -> new MainWindow().setVisible(true));
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnDownload;
