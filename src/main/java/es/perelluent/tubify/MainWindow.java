@@ -6,6 +6,7 @@ package es.perelluent.tubify;
 
 import es.perelluent.tubify.dto.DownloadedFile;
 import java.awt.Desktop;
+import java.awt.Image;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,7 +19,9 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 
@@ -51,6 +54,12 @@ public class MainWindow extends javax.swing.JFrame {
 
         loadPreferences();
         scanLibraryFolder();
+        
+        ImageIcon lblLogoIcon = new ImageIcon("src\\main\\resources\\images\\TubifyLogoTransparent.png");
+        ImageIcon scaledIcon = UpscaleIcon(lblLogoIcon, 150, 150);
+        lblLogo.setIcon(scaledIcon);
+        lblLogo.setBounds(20, 10, 130, 100);
+        pnlMain.add(lblLogo);
 
         preferences.setBounds(0, 0, getWidth(), getHeight());
         preferences.setVisible(false);
@@ -303,6 +312,11 @@ public class MainWindow extends javax.swing.JFrame {
             }
         }
     }
+    public static ImageIcon UpscaleIcon(ImageIcon icon, int width, int height) {
+        Image OriginalImage = icon.getImage();
+        Image UpscaledImage = OriginalImage.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        return new ImageIcon(UpscaledImage);
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -314,7 +328,7 @@ public class MainWindow extends javax.swing.JFrame {
     private void initComponents() {
 
         pnlMain = new javax.swing.JPanel();
-        lbl1 = new javax.swing.JLabel();
+        lblDownloadVideo = new javax.swing.JLabel();
         txtUrl = new javax.swing.JTextField();
         btnDownload = new javax.swing.JButton();
         prg1 = new javax.swing.JProgressBar();
@@ -329,6 +343,7 @@ public class MainWindow extends javax.swing.JFrame {
         lblDownloadedFiles = new javax.swing.JLabel();
         btnLibrary = new javax.swing.JButton();
         cmbAudioFormat = new javax.swing.JComboBox<>();
+        lblLogo = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         mnuFile = new javax.swing.JMenu();
         mniExit = new javax.swing.JMenuItem();
@@ -348,14 +363,14 @@ public class MainWindow extends javax.swing.JFrame {
         pnlMain.setPreferredSize(new java.awt.Dimension(1100, 700));
         pnlMain.setLayout(null);
 
-        lbl1.setText("Download video");
-        pnlMain.add(lbl1);
-        lbl1.setBounds(170, 28, 100, 16);
+        lblDownloadVideo.setText("Download video");
+        pnlMain.add(lblDownloadVideo);
+        lblDownloadVideo.setBounds(160, 60, 100, 16);
 
         txtUrl.setText("Paste your link...");
         txtUrl.setCaretColor(new java.awt.Color(51, 51, 255));
         pnlMain.add(txtUrl);
-        txtUrl.setBounds(52, 62, 340, 22);
+        txtUrl.setBounds(50, 100, 340, 22);
 
         btnDownload.setText("Download");
         btnDownload.addActionListener(new java.awt.event.ActionListener() {
@@ -364,18 +379,18 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
         pnlMain.add(btnDownload);
-        btnDownload.setBounds(52, 116, 99, 40);
+        btnDownload.setBounds(50, 150, 99, 40);
 
         prg1.setForeground(new java.awt.Color(51, 51, 255));
         pnlMain.add(prg1);
-        prg1.setBounds(52, 205, 340, 20);
+        prg1.setBounds(50, 240, 340, 20);
 
         txaDownloadResult.setColumns(20);
         txaDownloadResult.setRows(5);
         jScrollPane1.setViewportView(txaDownloadResult);
 
         pnlMain.add(jScrollPane1);
-        jScrollPane1.setBounds(52, 243, 340, 375);
+        jScrollPane1.setBounds(50, 280, 340, 375);
 
         btnPreferences.setText("Preferences");
         btnPreferences.addActionListener(new java.awt.event.ActionListener() {
@@ -384,11 +399,11 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
         pnlMain.add(btnPreferences);
-        btnPreferences.setBounds(455, 62, 121, 23);
+        btnPreferences.setBounds(450, 100, 121, 23);
 
         cmbResolucion.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "FullHD", "720p", "480p" }));
         pnlMain.add(cmbResolucion);
-        cmbResolucion.setBounds(220, 120, 173, 22);
+        cmbResolucion.setBounds(210, 160, 173, 22);
 
         chkOnlyAudio.setText("Only Audio");
         chkOnlyAudio.addActionListener(new java.awt.event.ActionListener() {
@@ -397,7 +412,7 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
         pnlMain.add(chkOnlyAudio);
-        chkOnlyAudio.setBounds(60, 170, 83, 31);
+        chkOnlyAudio.setBounds(50, 210, 81, 31);
 
         btnPlayLast.setText("Play from List");
         btnPlayLast.addActionListener(new java.awt.event.ActionListener() {
@@ -406,17 +421,17 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
         pnlMain.add(btnPlayLast);
-        btnPlayLast.setBounds(455, 624, 259, 23);
+        btnPlayLast.setBounds(450, 660, 259, 23);
 
         jScrollPane2.setViewportView(lstDownloaded);
 
         pnlMain.add(jScrollPane2);
-        jScrollPane2.setBounds(455, 243, 259, 375);
+        jScrollPane2.setBounds(450, 280, 259, 375);
 
         lblDownloadedFiles.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblDownloadedFiles.setText("Downloaded Files");
         pnlMain.add(lblDownloadedFiles);
-        lblDownloadedFiles.setBounds(500, 175, 156, 16);
+        lblDownloadedFiles.setBounds(490, 210, 156, 16);
 
         btnLibrary.setText("Go to Library");
         btnLibrary.addActionListener(new java.awt.event.ActionListener() {
@@ -425,12 +440,14 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
         pnlMain.add(btnLibrary);
-        btnLibrary.setBounds(594, 62, 120, 23);
+        btnLibrary.setBounds(590, 100, 120, 23);
 
         cmbAudioFormat.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "mp3", "wav", "m4a", "best" }));
         cmbAudioFormat.setEnabled(false);
         pnlMain.add(cmbAudioFormat);
-        cmbAudioFormat.setBounds(220, 170, 170, 22);
+        cmbAudioFormat.setBounds(210, 210, 170, 22);
+        pnlMain.add(lblLogo);
+        lblLogo.setBounds(100, 60, 41, 16);
 
         getContentPane().add(pnlMain);
         pnlMain.setBounds(0, 0, 820, 720);
@@ -593,8 +610,9 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JLabel lbl1;
+    private javax.swing.JLabel lblDownloadVideo;
     private javax.swing.JLabel lblDownloadedFiles;
+    private javax.swing.JLabel lblLogo;
     private javax.swing.JList<es.perelluent.tubify.dto.DownloadedFile> lstDownloaded;
     private javax.swing.JMenuItem mniAbout;
     private javax.swing.JMenuItem mniExit;

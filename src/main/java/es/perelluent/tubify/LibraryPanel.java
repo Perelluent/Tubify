@@ -6,9 +6,13 @@ package es.perelluent.tubify;
 
 import es.perelluent.tubify.dto.DownloadedFile;
 import es.perelluent.tubify.dto.LibraryTableModel;
+import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
 import javax.swing.DefaultListModel;
+import javax.swing.JOptionPane;
 import javax.swing.table.TableRowSorter;
 
 /**
@@ -101,6 +105,7 @@ public class LibraryPanel extends javax.swing.JPanel {
         lblFilter = new javax.swing.JLabel();
         lblMediaLibrary = new javax.swing.JLabel();
         cmbFilter = new javax.swing.JComboBox<>();
+        btnPlay = new javax.swing.JButton();
 
         setPreferredSize(new java.awt.Dimension(1100, 700));
         setLayout(null);
@@ -151,6 +156,15 @@ public class LibraryPanel extends javax.swing.JPanel {
 
         add(cmbFilter);
         cmbFilter.setBounds(20, 50, 72, 22);
+
+        btnPlay.setText("PLAY");
+        btnPlay.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPlayActionPerformed(evt);
+            }
+        });
+        add(btnPlay);
+        btnPlay.setBounds(720, 400, 75, 23);
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackActionPerformed
@@ -186,10 +200,48 @@ public class LibraryPanel extends javax.swing.JPanel {
 
     }//GEN-LAST:event_btnDeleteActionPerformed
 
+    private void btnPlayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPlayActionPerformed
+        int viewRow = tblLibrary.getSelectedRow();
+        DownloadedFile selectedFile = library.getFileAt(viewRow);
+
+        if (selectedFile == null) {
+            JOptionPane.showMessageDialog(this,
+                    "Please select a file from the list to play.",
+                    "No file selected",
+                    JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        String filePath = selectedFile.getFilePath();
+        if (filePath == null || filePath.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "File data is corrupt (no path).",
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        try {
+            File fileToOpen = new File(filePath);
+
+            if (Desktop.isDesktopSupported() && fileToOpen.exists()) {
+                Desktop.getDesktop().open(fileToOpen);
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "Cannot open the file. It may have been moved or deleted.",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this,
+                    "An error occurred while trying to open the file:\n" + e.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    
+    }//GEN-LAST:event_btnPlayActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnBack;
     private javax.swing.JButton btnDelete;
+    private javax.swing.JButton btnPlay;
     private javax.swing.JComboBox<FilterCategory> cmbFilter;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblFilter;
