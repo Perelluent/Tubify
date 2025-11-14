@@ -21,7 +21,6 @@ import java.util.regex.Pattern;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 
@@ -29,12 +28,12 @@ import javax.swing.SwingWorker;
  *
  * @author Perelluent
  */
-
 public class MainWindow extends javax.swing.JFrame {
 
     private final String YTDLP_PATH = System.getenv("LOCALAPPDATA") + "\\yt-dlp\\yt-dlp.exe";
     private final Preferences preferences = new Preferences(this);
     private final LibraryPanel libraryPanel = new LibraryPanel(this);
+    private final LoginPanel loginPanel;
     private String lastDownloadedFilePath = null;
     private final Properties props = new Properties();
     private final String PROPERTIES_PATH = System.getProperty("user.home") + File.separator + "TubifySettings.properties";
@@ -54,11 +53,11 @@ public class MainWindow extends javax.swing.JFrame {
 
         loadPreferences();
         scanLibraryFolder();
-        
-        ImageIcon lblLogoIcon = new ImageIcon("src\\main\\resources\\images\\TubifyLogoTransparent.png");
-        ImageIcon scaledIcon = UpscaleIcon(lblLogoIcon, 150, 150);
+
+        ImageIcon lblLogoIcon = new ImageIcon("src\\main\\resources\\images\\LogoIsotypeTrans.png");
+        ImageIcon scaledIcon = UpscaleIcon(lblLogoIcon, 60, 60);
         lblLogo.setIcon(scaledIcon);
-        lblLogo.setBounds(20, 10, 130, 100);
+        lblLogo.setBounds(70, 25, 60, 60);
         pnlMain.add(lblLogo);
 
         preferences.setBounds(0, 0, getWidth(), getHeight());
@@ -66,6 +65,15 @@ public class MainWindow extends javax.swing.JFrame {
         libraryPanel.setVisible(false);
         getContentPane().add(preferences);
         getContentPane().add(libraryPanel);
+
+        loginPanel = new LoginPanel(this);
+        loginPanel.setBounds(0, 0, 900, 900);
+        loginPanel.setVisible(true);
+        getContentPane().add(loginPanel);
+
+        pnlMain.setVisible(false);
+
+        setLocationRelativeTo(null);
 
     }
 
@@ -248,17 +256,23 @@ public class MainWindow extends javax.swing.JFrame {
 
     public void showMainWindow() {
         pnlMain.setVisible(true);
+        loginPanel.setVisible(false);
         preferences.setVisible(false);
+        libraryPanel.setVisible(false);
     }
 
     public void showPreferencesWindow() {
+        loginPanel.setVisible(false);
         pnlMain.setVisible(false);
+        libraryPanel.setVisible(false);
         preferences.setVisible(true);
         preferences.repaint();
     }
 
     public void showLibraryWindow() {
+        loginPanel.setVisible(false);
         pnlMain.setVisible(false);
+        preferences.setVisible(false);
         libraryPanel.setModelLibrary(dlmDownloaded);
         libraryPanel.setVisible(true);
         libraryPanel.repaint();
@@ -312,6 +326,7 @@ public class MainWindow extends javax.swing.JFrame {
             }
         }
     }
+
     public static ImageIcon UpscaleIcon(ImageIcon icon, int width, int height) {
         Image OriginalImage = icon.getImage();
         Image UpscaledImage = OriginalImage.getScaledInstance(width, height, Image.SCALE_SMOOTH);

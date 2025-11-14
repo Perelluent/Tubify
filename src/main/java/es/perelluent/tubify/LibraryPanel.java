@@ -155,7 +155,7 @@ public class LibraryPanel extends javax.swing.JPanel {
         lblMediaLibrary.setBounds(260, 30, 290, 40);
 
         add(cmbFilter);
-        cmbFilter.setBounds(20, 50, 72, 22);
+        cmbFilter.setBounds(20, 50, 170, 22);
 
         btnPlay.setText("PLAY");
         btnPlay.addActionListener(new java.awt.event.ActionListener() {
