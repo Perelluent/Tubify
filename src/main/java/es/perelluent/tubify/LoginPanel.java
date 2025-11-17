@@ -24,6 +24,7 @@ public class LoginPanel extends JPanel {
     private JPasswordField pwfPassword;
     private JButton btnLogin;
     private JLabel lblLogo;
+    private JCheckBox chkRememberMe;
 
     public LoginPanel(MainWindow mainWindow) {
 
@@ -44,6 +45,7 @@ public class LoginPanel extends JPanel {
         lblPassword.setBounds(425, 500, 300, 25);
         pwfPassword.setBounds(300, 525, 300, 25);
         btnLogin.setBounds(400, 575, 100, 50);
+        chkRememberMe.setBounds(300, 650, 150, 75);
 
         add(lblLogo);
         add(lblUser);
@@ -51,6 +53,7 @@ public class LoginPanel extends JPanel {
         add(lblPassword);
         add(pwfPassword);
         add(btnLogin);
+        add(chkRememberMe);
 
 
         btnLogin.addActionListener(new ActionListener() {
@@ -73,6 +76,7 @@ public class LoginPanel extends JPanel {
         pwfPassword = new JPasswordField("Password");
         btnLogin = new JButton("Login");
         lblLogo = new JLabel();
+        chkRememberMe = new JCheckBox("Remember me");
 
     }
 

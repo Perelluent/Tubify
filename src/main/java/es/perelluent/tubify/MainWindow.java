@@ -359,6 +359,7 @@ public class MainWindow extends javax.swing.JFrame {
         btnLibrary = new javax.swing.JButton();
         cmbAudioFormat = new javax.swing.JComboBox<>();
         lblLogo = new javax.swing.JLabel();
+        btnLogout = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         mnuFile = new javax.swing.JMenu();
         mniExit = new javax.swing.JMenuItem();
@@ -427,7 +428,7 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
         pnlMain.add(chkOnlyAudio);
-        chkOnlyAudio.setBounds(50, 210, 81, 31);
+        chkOnlyAudio.setBounds(50, 210, 83, 31);
 
         btnPlayLast.setText("Play from List");
         btnPlayLast.addActionListener(new java.awt.event.ActionListener() {
@@ -463,6 +464,10 @@ public class MainWindow extends javax.swing.JFrame {
         cmbAudioFormat.setBounds(210, 210, 170, 22);
         pnlMain.add(lblLogo);
         lblLogo.setBounds(100, 60, 41, 16);
+
+        btnLogout.setText("Logout");
+        pnlMain.add(btnLogout);
+        btnLogout.setBounds(710, 20, 72, 23);
 
         getContentPane().add(pnlMain);
         pnlMain.setBounds(0, 0, 820, 720);
@@ -617,6 +622,7 @@ public class MainWindow extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnDownload;
     private javax.swing.JButton btnLibrary;
+    private javax.swing.JButton btnLogout;
     private javax.swing.JButton btnPlayLast;
     private javax.swing.JButton btnPreferences;
     private javax.swing.JCheckBox chkOnlyAudio;
