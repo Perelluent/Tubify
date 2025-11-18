@@ -4,6 +4,7 @@
  */
 package es.perelluent.tubify;
 
+import es.perelluent.tubify.dto.ApiClient;
 import es.perelluent.tubify.dto.DownloadedFile;
 import java.awt.Desktop;
 import java.awt.Image;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,18 +36,19 @@ public class MainWindow extends javax.swing.JFrame {
     private final Preferences preferences = new Preferences(this);
     private final LibraryPanel libraryPanel = new LibraryPanel(this);
     private final LoginPanel loginPanel;
-    private String lastDownloadedFilePath = null;
     private final Properties props = new Properties();
     private final String PROPERTIES_PATH = System.getProperty("user.home") + File.separator + "TubifySettings.properties";
     private final DefaultListModel<DownloadedFile> dlmDownloaded;
-
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(MainWindow.class.getName());
+    private final ApiClient apiClient;
+    private String token = null;
 
     /**
      * Creates new form MainWindow
      */
     public MainWindow() {
 
+        this.apiClient = new ApiClient("https://dimedianetapi9.azurewebsites.net");
         initComponents();
 
         dlmDownloaded = new DefaultListModel<>();
@@ -66,7 +69,7 @@ public class MainWindow extends javax.swing.JFrame {
         getContentPane().add(preferences);
         getContentPane().add(libraryPanel);
 
-        loginPanel = new LoginPanel(this);
+        loginPanel = new LoginPanel(this.apiClient, this);
         loginPanel.setBounds(0, 0, 900, 900);
         loginPanel.setVisible(true);
         getContentPane().add(loginPanel);
@@ -278,6 +281,15 @@ public class MainWindow extends javax.swing.JFrame {
         libraryPanel.repaint();
     }
 
+    public void showLoginPanel() {
+        loginPanel.setVisible(true);
+        pnlMain.setVisible(false);
+        preferences.setVisible(false);
+        libraryPanel.setModelLibrary(dlmDownloaded);
+        libraryPanel.setVisible(false);
+        libraryPanel.repaint();
+    }
+
     private void addFileToLibrary(String finalFilePath) throws IOException {
         File file = new File(finalFilePath);
         if (file.exists()) {
@@ -331,6 +343,14 @@ public class MainWindow extends javax.swing.JFrame {
         Image OriginalImage = icon.getImage();
         Image UpscaledImage = OriginalImage.getScaledInstance(width, height, Image.SCALE_SMOOTH);
         return new ImageIcon(UpscaledImage);
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 
     /**
@@ -466,6 +486,11 @@ public class MainWindow extends javax.swing.JFrame {
         lblLogo.setBounds(100, 60, 41, 16);
 
         btnLogout.setText("Logout");
+        btnLogout.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnLogoutActionPerformed(evt);
+            }
+        });
         pnlMain.add(btnLogout);
         btnLogout.setBounds(710, 20, 72, 23);
 
@@ -594,6 +619,20 @@ public class MainWindow extends javax.swing.JFrame {
         showLibraryWindow();
     }//GEN-LAST:event_btnLibraryActionPerformed
 
+    private void btnLogoutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLogoutActionPerformed
+
+        int response = JOptionPane.showConfirmDialog(
+                null,
+                "¿Are you sure you want to logout?",
+                "Logout",
+                JOptionPane.YES_NO_OPTION
+        );
+        if (response == JOptionPane.YES_OPTION) {
+            this.token = null;
+            showLoginPanel();
+        }
+    }//GEN-LAST:event_btnLogoutActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -616,6 +655,7 @@ public class MainWindow extends javax.swing.JFrame {
         //</editor-fold>
 
         /* Create and display the form */
+        Locale.setDefault(Locale.ENGLISH);
         java.awt.EventQueue.invokeLater(() -> new MainWindow().setVisible(true));
     }
 
