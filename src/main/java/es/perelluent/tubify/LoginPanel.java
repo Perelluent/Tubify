@@ -9,7 +9,9 @@ import es.perelluent.tubify.dto.ApiClient;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Optional;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.net.URL;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 
@@ -20,7 +22,7 @@ import javax.swing.*;
 public class LoginPanel extends JPanel {
 
     private final MainWindow mainWindow;
-    private ApiClient apiClient;
+    private final ApiClient apiClient;
     private JPanel pnlLogin;
     private JLabel lblUser;
     private JLabel lblPassword;
@@ -30,10 +32,11 @@ public class LoginPanel extends JPanel {
     private JLabel lblLogo;
     private JCheckBox chkRememberMe;
     private JLabel lblError;
-    private Preferences prefs = Preferences.userNodeForPackage(es.perelluent.tubify.LoginPanel.class);
+    private final Preferences prefs = Preferences.userNodeForPackage(es.perelluent.tubify.LoginPanel.class);
     private final String prefEmail = "user_email";
     private final String prefPassword = "user_password";
     private final String prefRememberMe = "remember_me_check";
+    private URL imageUrl = getClass().getResource("/images/TubifyLogoTransparent.png");
 
     public LoginPanel(ApiClient apiClient, MainWindow mainWindow) {
 
@@ -55,7 +58,7 @@ public class LoginPanel extends JPanel {
         setLayout(null);
         setMinimumSize(new Dimension(900, 900));
         setSize(new Dimension(900, 900));
-        ImageIcon lblLogoIcon = new ImageIcon("src\\main\\resources\\images\\TubifyLogoTransparent.png");
+        ImageIcon lblLogoIcon = new ImageIcon(imageUrl);
         ImageIcon scaledIcon = UpscaleIcon(lblLogoIcon, 570, 250);
         lblLogo.setIcon(scaledIcon);
         lblLogo.setBounds(150, 100, 570, 250);
@@ -89,43 +92,78 @@ public class LoginPanel extends JPanel {
                 }
             }
         });
+        txtUser.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (txtUser.getText().equals("Email")) {
+                    txtUser.setText("");
+                }
+            }
 
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (txtUser.getText().isEmpty()) {
+                    txtUser.setText("Email");
+                }
+            }
+        });
+        pswPassword.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (pswPassword.getText().equals("Password")) {
+                    pswPassword.setText("");
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (pswPassword.getText().isEmpty()) {
+                    pswPassword.setText("Email");
+                }
+            }
+
+        });
     }
 
     private void initComponents() {
 
-        pnlLogin = new JPanel();
-        pnlLogin.setLayout(null);
+                pnlLogin = new JPanel();
+                pnlLogin.setLayout(null);
 
-        lblUser = new JLabel("User");
-        lblPassword = new JLabel("Password");
-        txtUser = new JTextField("Email");
-        pswPassword = new JPasswordField("Password");
-        btnLogin = new JButton("Login");
-        lblLogo = new JLabel();
-        chkRememberMe = new JCheckBox("Remember me");
-        lblError = new JLabel();
+                lblUser = new JLabel("User");
+                lblPassword = new JLabel("Password");
+                txtUser = new JTextField("Email");
+                pswPassword = new JPasswordField("Password");
+                btnLogin = new JButton("Login");
+                lblLogo = new JLabel();
+                chkRememberMe = new JCheckBox("Remember me");
+                lblError = new JLabel();
 
-    }
-
-    private void btnLoginActionPerformed(ActionEvent evt) throws Exception {
-        String email = txtUser.getText();
-        var password = new String(pswPassword.getPassword());
-        lblError.setText("");
-        try {
-            Optional<String> response = apiClient.login(email, password);
-
-            if (response.isPresent()) {
-                String token = response.get();
-                mainWindow.setToken(token);
-                mainWindow.showMainWindow();
             }
-        } catch (Exception e) {
-            lblError.setText("Login failed. Please check your username and password.");
-            e.printStackTrace();
 
+            private void btnLoginActionPerformed(ActionEvent evt) throws Exception {
+                String email = txtUser.getText();
+                var password = new String(pswPassword.getPassword());
+                lblError.setText("");
+                try {
+                    String token = apiClient.login(email, password);
+                    mainWindow.setToken(token);
+
+                    if (chkRememberMe.isSelected()) {
+                        prefs.put(prefEmail, email);
+                        prefs.put(prefPassword, password);
+                        prefs.putBoolean(prefRememberMe, true);
+                    } else {
+                        // Si se desmarca, borramos credenciales
+                        prefs.remove(prefEmail);
+                        prefs.remove(prefPassword);
+                        prefs.putBoolean(prefRememberMe, false);
+                    }
+
+                    mainWindow.showMainWindow();
+                } catch (Exception e) {
+                    lblError.setText("Login failed. Please check your username and password.");
+                    e.printStackTrace();
+                }
+            }
         }
-
-    }
-
-}

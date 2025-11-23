@@ -9,6 +9,7 @@ es\perelluent\tubify\MainWindow$5.class
 es\perelluent\tubify\MainWindow$8.class
 es\perelluent\tubify\dto\ApiClient.class
 es\perelluent\tubify\Preferences$3.class
+es\perelluent\tubify\LoginPanel$2.class
 es\perelluent\tubify\MainWindow$6.class
 es\perelluent\tubify\LibraryPanel$4.class
 es\perelluent\tubify\MainWindow.class
@@ -30,5 +31,7 @@ es\perelluent\tubify\dto\ApiClient$1.class
 es\perelluent\tubify\LibraryPanel$5.class
 es\perelluent\tubify\Preferences$4.class
 es\perelluent\tubify\MainWindow$7.class
+es\perelluent\tubify\dto\ApiClient$4.class
+es\perelluent\tubify\LoginPanel$3.class
 es\perelluent\tubify\MainWindow$2.class
 es\perelluent\tubify\Preferences$1.class

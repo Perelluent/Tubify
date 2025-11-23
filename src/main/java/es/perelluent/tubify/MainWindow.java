@@ -14,6 +14,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -42,6 +43,7 @@ public class MainWindow extends javax.swing.JFrame {
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(MainWindow.class.getName());
     private final ApiClient apiClient;
     private String token = null;
+    private URL imageUrl = getClass().getResource("/images/LogoIsotypeTrans.png");
 
     /**
      * Creates new form MainWindow
@@ -57,7 +59,7 @@ public class MainWindow extends javax.swing.JFrame {
         loadPreferences();
         scanLibraryFolder();
 
-        ImageIcon lblLogoIcon = new ImageIcon("src\\main\\resources\\images\\LogoIsotypeTrans.png");
+        ImageIcon lblLogoIcon = new ImageIcon(imageUrl);
         ImageIcon scaledIcon = UpscaleIcon(lblLogoIcon, 60, 60);
         lblLogo.setIcon(scaledIcon);
         lblLogo.setBounds(70, 25, 60, 60);
