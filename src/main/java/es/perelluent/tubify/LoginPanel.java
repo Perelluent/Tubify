@@ -34,9 +34,9 @@ public class LoginPanel extends JPanel {
     private JLabel lblError;
     private final Preferences prefs = Preferences.userNodeForPackage(es.perelluent.tubify.LoginPanel.class);
     private final String prefEmail = "user_email";
-    private final String prefPassword = "user_password";
+    private final String prefToken = "user_token";
     private final String prefRememberMe = "remember_me_check";
-    private URL imageUrl = getClass().getResource("/images/TubifyLogoTransparent.png");
+    private final URL imageUrl = getClass().getResource("/images/TubifyLogoTransparent.png");
 
     public LoginPanel(ApiClient apiClient, MainWindow mainWindow) {
 
@@ -47,11 +47,19 @@ public class LoginPanel extends JPanel {
         boolean remember = prefs.getBoolean(prefRememberMe, false);
         if (remember) {
             String savedEmail = prefs.get(prefEmail, "");
+            String savedToken = prefs.get(prefToken, "");
+            if (!savedToken.isEmpty()) {
+                try {
+                    mainWindow.setToken(savedToken);
+                    mainWindow.showMainWindow();
+                    return;
+                } catch (Exception e) {
+                    prefs.remove(prefToken);
+                    lblError.setText(prefToken);
+                    System.out.println("Token validation failed, requiring manual login.");
+                }
+            }
             txtUser.setText(savedEmail);
-
-            String savedPassword = prefs.get(prefPassword, "");
-            pswPassword.setText(savedPassword);
-
             chkRememberMe.setSelected(true);
         }
 
@@ -127,43 +135,49 @@ public class LoginPanel extends JPanel {
 
     private void initComponents() {
 
-                pnlLogin = new JPanel();
-                pnlLogin.setLayout(null);
+        pnlLogin = new JPanel();
+        pnlLogin.setLayout(null);
 
-                lblUser = new JLabel("User");
-                lblPassword = new JLabel("Password");
-                txtUser = new JTextField("Email");
-                pswPassword = new JPasswordField("Password");
-                btnLogin = new JButton("Login");
-                lblLogo = new JLabel();
-                chkRememberMe = new JCheckBox("Remember me");
-                lblError = new JLabel();
+        lblUser = new JLabel("User");
+        lblPassword = new JLabel("Password");
+        txtUser = new JTextField("Email");
+        pswPassword = new JPasswordField("Password");
+        btnLogin = new JButton("Login");
+        lblLogo = new JLabel();
+        chkRememberMe = new JCheckBox("Remember me");
+        lblError = new JLabel();
 
+    }
+
+    private void btnLoginActionPerformed(ActionEvent evt) throws Exception {
+        String email = txtUser.getText();
+        var password = new String(pswPassword.getPassword());
+        lblError.setText("");
+        try {
+            String token = apiClient.login(email, password);
+            mainWindow.setToken(token);
+
+            if (chkRememberMe.isSelected()) {
+                prefs.put(prefEmail, email);
+                prefs.put(prefToken, token);
+                prefs.putBoolean(prefRememberMe, true);
+            } else {
+                // Si se desmarca, borramos credenciales
+                prefs.remove(prefEmail);
+                prefs.remove(prefToken);
+                prefs.putBoolean(prefRememberMe, false);
             }
 
-            private void btnLoginActionPerformed(ActionEvent evt) throws Exception {
-                String email = txtUser.getText();
-                var password = new String(pswPassword.getPassword());
-                lblError.setText("");
-                try {
-                    String token = apiClient.login(email, password);
-                    mainWindow.setToken(token);
-
-                    if (chkRememberMe.isSelected()) {
-                        prefs.put(prefEmail, email);
-                        prefs.put(prefPassword, password);
-                        prefs.putBoolean(prefRememberMe, true);
-                    } else {
-                        // Si se desmarca, borramos credenciales
-                        prefs.remove(prefEmail);
-                        prefs.remove(prefPassword);
-                        prefs.putBoolean(prefRememberMe, false);
-                    }
-
-                    mainWindow.showMainWindow();
-                } catch (Exception e) {
-                    lblError.setText("Login failed. Please check your username and password.");
-                    e.printStackTrace();
-                }
-            }
+            mainWindow.showMainWindow();
+        } catch (Exception e) {
+            lblError.setText("Login failed. Please check your username and password.");
+            e.printStackTrace();
         }
+    }
+    public void clearTextAreas() {
+        prefs.remove(prefToken);
+        prefs.remove(prefEmail);
+        txtUser.setText("");
+        pswPassword.setText("");
+    }
+}

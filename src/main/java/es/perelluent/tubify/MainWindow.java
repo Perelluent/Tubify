@@ -355,6 +355,7 @@ public class MainWindow extends javax.swing.JFrame {
         this.token = token;
     }
 
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -631,6 +632,7 @@ public class MainWindow extends javax.swing.JFrame {
         );
         if (response == JOptionPane.YES_OPTION) {
             this.token = null;
+            loginPanel.clearTextAreas();
             showLoginPanel();
         }
     }//GEN-LAST:event_btnLogoutActionPerformed
