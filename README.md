@@ -1,5 +1,5 @@
 # 🎞️ Tubify
-### Gui downloader for `yt-dlp'
+### Cloud-Enabled GUI Downloader for [yt-dlp](https://github.com/yt-dlp/yt-dlp.git)
 
 ## 👀 Overview
 **Tubify** is a desktop application built with **Java**
@@ -8,6 +8,8 @@ It acts as a **GUI wrapper** around the powerful command-line tool [`yt-dlp`](ht
 With this app, users can:
 - 📥 Download videos or audio from multiple platforms.  
 - 🧹 Skip ads in downloaded media.
+- ☁️ Sync with the cloud: Login to access your media files from anywhere.
+- 📂 Manage Library: View a unified table of Local vs Cloud files.
 
 ## Screenshots
 <img width="886" height="893" alt="image" src="https://github.com/user-attachments/assets/8cc0bfac-dfcf-4f58-a83f-4ecf45e3e17f" />
