@@ -5,83 +5,58 @@
 
 package es.perelluent.tubify.dto;
 
+import es.perelluent.mediapollingbean.dto.Media;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import javax.swing.DefaultListModel;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
 import javax.swing.table.AbstractTableModel;
 
 /**
  *
  * @author Perelluent
  */
-public class LibraryTableModel extends AbstractTableModel implements ListDataListener{
-    private final DefaultListModel<DownloadedFile> listDownloadedFilesModel;
-    private final String[] columnNames = {"File Name","Size","Type","Download Date"};
-    private List<DownloadedFile> filteredList;
-    private String currentFilter = "";
-    
-    public LibraryTableModel(DefaultListModel<DownloadedFile> listDownloadedFile) {
-        this.listDownloadedFilesModel = listDownloadedFile;
-        this.listDownloadedFilesModel.addListDataListener(this);
-        this.filteredList = new ArrayList<>(Collections.list(listDownloadedFile.elements()));
-        
+public class LibraryTableModel extends AbstractTableModel {
+
+    private final String[] columnNames = {"ID", "File Name", "Type", "Origin"};
+    private List<Media> mediaList;
+
+    public LibraryTableModel() {
+        this.mediaList = new ArrayList<>();
     }
-    
-    public DownloadedFile getFileAt(int rowIndex) {
-        if(rowIndex < 0 || rowIndex >= filteredList.size()){
-            return null;
-        }
-        return filteredList.get(rowIndex);
+
+    public LibraryTableModel(List<Media> mediaList) {
+        this.mediaList = mediaList;
     }
-    public void removeFile(DownloadedFile file) {
-        listDownloadedFilesModel.removeElement(file);
-    }
-    
-    public void filterByType(String type) {
-        currentFilter = type;
-        filteredList.clear();
-        
-        for (int i = 0; i < listDownloadedFilesModel.getSize(); i++) {
-            DownloadedFile file = listDownloadedFilesModel.getElementAt(i);
-            String mime = file.getMimeType() != null ? file.getMimeType() : "";
-            
-            if (type.isEmpty() || mime.startsWith(type)) {
-                filteredList.add(file);
-            }
-        }
+
+    public void setMediaList(List<Media> mediaList) {
+        this.mediaList = mediaList;
         fireTableDataChanged();
+    }
+
+    public void addMedia(Media media) {
+        this.mediaList.add(media);
+        fireTableRowsInserted(mediaList.size() - 1, mediaList.size() - 1);
+    }
+
+    public void removeMedia(int rowIndex) {
+        this.mediaList.remove(rowIndex);
+        fireTableRowsDeleted(rowIndex, rowIndex);
+    }
+
+    public Media getMediaAt(int rowIndex) {
+        if (rowIndex >= 0 && rowIndex < mediaList.size()) {
+            return mediaList.get(rowIndex);
+        }
+        return null;
     }
 
     @Override
     public int getRowCount() {
-        return filteredList.size();
+        return mediaList.size();
     }
 
     @Override
     public int getColumnCount() {
-        return 4;
-    }
-
-    @Override
-    public Object getValueAt(int rowIndex, int columnIndex) {
-        
-        DownloadedFile file = filteredList.get(rowIndex);
-        
-        switch (columnIndex) {
-            case 0:
-                return file.getFileName();
-            case 1:
-                return file.getFileSize();
-            case 2: 
-                return file.getMimeType();
-            case 3: 
-                return file.getDownloadDate();
-            default:
-                throw new AssertionError();
-        }
+        return columnNames.length;
     }
 
     @Override
@@ -90,18 +65,14 @@ public class LibraryTableModel extends AbstractTableModel implements ListDataLis
     }
 
     @Override
-    public void intervalAdded(ListDataEvent e) {
-        filterByType(currentFilter);
+    public Object getValueAt(int rowIndex, int columnIndex) {
+        Media m = mediaList.get(rowIndex);
+        switch (columnIndex) {
+            case 0: return m.id;
+            case 1: return m.mediaFileName;
+            case 2: return m.mediaMimeType;
+            case 3: return m.downloadedFromUrl;
+            default: return null;
+        }
     }
-
-    @Override
-    public void intervalRemoved(ListDataEvent e) {
-        filterByType(currentFilter);
-    }
-
-    @Override
-    public void contentsChanged(ListDataEvent e) {
-        filterByType(currentFilter);
-    }
-    
 }

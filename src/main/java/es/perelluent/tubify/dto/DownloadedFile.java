@@ -91,7 +91,7 @@ public class DownloadedFile {
         this.downloadDate = downloadDate;
     }
     
-    public boolean deleteFromDisk() {
+   public boolean deleteFromDisk() {
     try {
         File f = new File(this.filePath);
         return f.delete();

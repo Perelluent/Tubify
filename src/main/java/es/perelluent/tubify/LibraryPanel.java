@@ -4,15 +4,17 @@
  */
 package es.perelluent.tubify;
 
-import es.perelluent.tubify.dto.DownloadedFile;
+import es.perelluent.mediapollingbean.dto.Media;
 import es.perelluent.tubify.dto.LibraryTableModel;
+import java.awt.BorderLayout;
 import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
-import javax.swing.DefaultListModel;
+import java.net.URI;
+import java.util.List;
 import javax.swing.JOptionPane;
+import javax.swing.RowFilter;
+import javax.swing.SwingUtilities;
 import javax.swing.table.TableRowSorter;
 
 /**
@@ -22,8 +24,8 @@ import javax.swing.table.TableRowSorter;
 public class LibraryPanel extends javax.swing.JPanel {
 
     private final MainWindow main;
-    private LibraryTableModel library;
-
+    private LibraryTableModel libraryModel;
+    private TableRowSorter<LibraryTableModel> sorter;
     /**
      * Creates new form LibraryPanel
      *
@@ -32,9 +34,18 @@ public class LibraryPanel extends javax.swing.JPanel {
     public LibraryPanel(MainWindow main) {
         this.main = main;
 
+        this.setLayout(new BorderLayout());
+        
         initComponents();
-        setBounds(0, 0, 900, 900);
-
+        
+        libraryModel = new LibraryTableModel();
+        tblLibrary.setModel(libraryModel);
+        
+        this.add(jScrollPane1, BorderLayout.CENTER);
+        
+        sorter = new TableRowSorter<>(libraryModel);
+        tblLibrary.setRowSorter(sorter);
+        
         cmbFilter.addItem(new FilterCategory("Show All", ""));
         cmbFilter.addItem(new FilterCategory("Videos Only", "video"));
         cmbFilter.addItem(new FilterCategory("Audio Only", "audio"));
@@ -43,9 +54,7 @@ public class LibraryPanel extends javax.swing.JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 FilterCategory selected = (FilterCategory) cmbFilter.getSelectedItem();
-                if (library != null) {
-                    library.filterByType(selected.getFilterValue());
-                }
+                filterTable(selected.getFilterValue());
             }
             
         });
@@ -58,16 +67,36 @@ public class LibraryPanel extends javax.swing.JPanel {
             
         });
     }
+    
+    public void loadMedia() {
 
-    public void setModelLibrary(DefaultListModel<DownloadedFile> libraryModel) {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try{
+                    if (main.getMediaPollingBean().getToken() == null) {
+                        System.out.println("Token error. You're not logged in");
+                        return;
+                    }
+                    final List<Media> cloudFiles = main.getMediaPollingBean().getAllMedia();
+                    SwingUtilities.invokeLater(() -> {
+                    libraryModel.setMediaList(cloudFiles);
+                });
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
+                }
+            }
+        });
+        thread.start();
+    } 
 
-        LibraryTableModel ltb = new LibraryTableModel(libraryModel);
-        this.library = new LibraryTableModel(libraryModel);
-        tblLibrary.setModel(library);
-        TableRowSorter<LibraryTableModel> sorter = new TableRowSorter<>(library);
-        tblLibrary.setRowSorter(sorter);
+    private void filterTable(String query) {
+        if (query.isEmpty()) {
+            sorter.setRowFilter(null);
+        } else {
+            sorter.setRowFilter(RowFilter.regexFilter("(?i)" + query, 2));
+        }
     }
-
     class FilterCategory {
 
         private final String displayName;
@@ -87,6 +116,11 @@ public class LibraryPanel extends javax.swing.JPanel {
             return displayName;
         }
 
+    }
+    public void showNewMediaList(List<Media> newFiles) {
+        if (newFiles == null || newFiles.isEmpty()) {
+            return;
+        }
     }
 
     /**
@@ -133,7 +167,7 @@ public class LibraryPanel extends javax.swing.JPanel {
         jScrollPane1.setViewportView(tblLibrary);
 
         add(jScrollPane1);
-        jScrollPane1.setBounds(10, 90, 790, 290);
+        jScrollPane1.setBounds(10, 90, 790, 450);
 
         btnDelete.setText("Delete File");
         btnDelete.addActionListener(new java.awt.event.ActionListener() {
@@ -142,7 +176,7 @@ public class LibraryPanel extends javax.swing.JPanel {
             }
         });
         add(btnDelete);
-        btnDelete.setBounds(10, 410, 110, 23);
+        btnDelete.setBounds(10, 560, 110, 23);
 
         lblFilter.setText("Filter");
         add(lblFilter);
@@ -164,7 +198,7 @@ public class LibraryPanel extends javax.swing.JPanel {
             }
         });
         add(btnPlay);
-        btnPlay.setBounds(720, 400, 75, 23);
+        btnPlay.setBounds(720, 550, 75, 23);
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackActionPerformed
@@ -174,65 +208,45 @@ public class LibraryPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_btnBackActionPerformed
 
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
-        int viewRow = tblLibrary.getSelectedRow();
+    int viewRow = tblLibrary.getSelectedRow();
+        if (viewRow == -1) {
+            JOptionPane.showMessageDialog(this, "Select a file to delete.");
+            return;
+        }
 
-    if (viewRow == -1) {
-        javax.swing.JOptionPane.showMessageDialog(this, "Please select a file to delete.", "No file selected", javax.swing.JOptionPane.WARNING_MESSAGE);
-        return;
-    }
-    int modelRow = tblLibrary.convertRowIndexToModel(viewRow);
+        int modelRow = tblLibrary.convertRowIndexToModel(viewRow);
+        Media fileToDelete = libraryModel.getMediaAt(modelRow);
 
-    DownloadedFile fileToDelete = library.getFileAt(modelRow);
+        int choice = JOptionPane.showConfirmDialog(this,
+                "Remove '" + fileToDelete.mediaFileName + "' from list?\n(Note: API delete not supported yet)",
+                "Confirm", JOptionPane.YES_NO_OPTION);
 
-    if (fileToDelete == null) return;
-
-    int choice = javax.swing.JOptionPane.showConfirmDialog(
-            this, 
-            "Are you sure you want to delete this file from your disk?\n" + fileToDelete.getFileName(), 
-            "Confirm Deletion", 
-            javax.swing.JOptionPane.YES_NO_OPTION, 
-            javax.swing.JOptionPane.QUESTION_MESSAGE);
-
-    if (choice == javax.swing.JOptionPane.YES_OPTION) {
-        fileToDelete.deleteFromDisk();
-        library.removeFile(fileToDelete);
-    }
+        if (choice == JOptionPane.YES_OPTION) {
+            // Nota: El ApiClient proporcionado NO tiene método delete. 
+            // Solo lo quitamos de la vista visual.
+            libraryModel.removeMedia(modelRow);
+        }
 
     }//GEN-LAST:event_btnDeleteActionPerformed
 
     private void btnPlayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPlayActionPerformed
         int viewRow = tblLibrary.getSelectedRow();
-        DownloadedFile selectedFile = library.getFileAt(viewRow);
-
-        if (selectedFile == null) {
-            JOptionPane.showMessageDialog(this,
-                    "Please select a file from the list to play.",
-                    "No file selected",
-                    JOptionPane.INFORMATION_MESSAGE);
+        if (viewRow == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a file to play.");
             return;
         }
+        int modelRow = tblLibrary.convertRowIndexToModel(viewRow);
+        Media selectedMedia = libraryModel.getMediaAt(modelRow);
 
-        String filePath = selectedFile.getFilePath();
-        if (filePath == null || filePath.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "File data is corrupt (no path).",
-                    "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        try {
-            File fileToOpen = new File(filePath);
+        if (selectedMedia != null && selectedMedia.blobUrl != null) {
+            try {
 
-            if (Desktop.isDesktopSupported() && fileToOpen.exists()) {
-                Desktop.getDesktop().open(fileToOpen);
-            } else {
-                JOptionPane.showMessageDialog(this,
-                        "Cannot open the file. It may have been moved or deleted.",
-                        "Error", JOptionPane.ERROR_MESSAGE);
+                Desktop.getDesktop().browse(new URI(selectedMedia.blobUrl));
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error opening URL: " + ex.getMessage());
             }
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(this,
-                    "An error occurred while trying to open the file:\n" + e.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this, "Invalid media URL.");
         }
     
     }//GEN-LAST:event_btnPlayActionPerformed

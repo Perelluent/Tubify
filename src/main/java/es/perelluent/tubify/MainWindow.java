@@ -4,9 +4,11 @@
  */
 package es.perelluent.tubify;
 
-import es.perelluent.tubify.dto.ApiClient;
+import es.perelluent.mediapollingbean.MediaPollingBean;
+import es.perelluent.MediaPollingBeanEvent.MediaPollingBeanEvent;
+import es.perelluent.MediaPollingBeanEvent.MediaPollingBeanListener;
+import es.perelluent.mediapollingbean.dto.Media;
 import es.perelluent.tubify.dto.DownloadedFile;
-import java.awt.Desktop;
 import java.awt.Image;
 import java.io.BufferedReader;
 import java.io.File;
@@ -31,30 +33,32 @@ import javax.swing.SwingWorker;
  *
  * @author Perelluent
  */
-public class MainWindow extends javax.swing.JFrame {
+public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanListener {
 
     private final String YTDLP_PATH = System.getenv("LOCALAPPDATA") + "\\yt-dlp\\yt-dlp.exe";
+    private final String PROPERTIES_PATH = System.getProperty("user.home") + File.separator + "TubifySettings.properties";
+    private final URL imageUrl = getClass().getResource("/images/LogoIsotypeTrans.png");
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(MainWindow.class.getName());
+    
     private final Preferences preferences = new Preferences(this);
-    private final LibraryPanel libraryPanel = new LibraryPanel(this);
+    private LibraryPanel libraryPanel = new LibraryPanel(this);
     private final LoginPanel loginPanel;
     private final Properties props = new Properties();
-    private final String PROPERTIES_PATH = System.getProperty("user.home") + File.separator + "TubifySettings.properties";
-    private final DefaultListModel<DownloadedFile> dlmDownloaded;
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(MainWindow.class.getName());
-    private final ApiClient apiClient;
+
     private String token = null;
-    private URL imageUrl = getClass().getResource("/images/LogoIsotypeTrans.png");
+    
+    private final DefaultListModel<Media> dlmMedia;
+    private final DefaultListModel<DownloadedFile> dlmDownloadedFile;
 
     /**
      * Creates new form MainWindow
      */
     public MainWindow() {
 
-        this.apiClient = new ApiClient("https://dimedianetapi9.azurewebsites.net");
         initComponents();
 
-        dlmDownloaded = new DefaultListModel<>();
-        lstDownloaded.setModel(dlmDownloaded);
+        dlmMedia = new DefaultListModel<>();
+        dlmDownloadedFile = new DefaultListModel<>();
 
         loadPreferences();
         scanLibraryFolder();
@@ -64,21 +68,27 @@ public class MainWindow extends javax.swing.JFrame {
         lblLogo.setIcon(scaledIcon);
         lblLogo.setBounds(70, 25, 60, 60);
         pnlMain.add(lblLogo);
+        libraryPanel = new LibraryPanel(this);
+        libraryPanel.setBounds(500, 170, getWidth(),getHeight());
+        pnlMain.add(libraryPanel);
+
 
         preferences.setBounds(0, 0, getWidth(), getHeight());
         preferences.setVisible(false);
-        libraryPanel.setVisible(false);
         getContentPane().add(preferences);
-        getContentPane().add(libraryPanel);
 
-        loginPanel = new LoginPanel(this.apiClient, this);
-        loginPanel.setBounds(0, 0, 900, 900);
+
+        loginPanel = new LoginPanel(mediaPollingBean, this);
+        loginPanel.setBounds(0, 0, 1500, 1000);
         loginPanel.setVisible(true);
         getContentPane().add(loginPanel);
+       
 
         pnlMain.setVisible(false);
 
         setLocationRelativeTo(null);
+
+        mediaPollingBean.addMediaPollingBeanListener(this);
 
     }
 
@@ -197,7 +207,7 @@ public class MainWindow extends javax.swing.JFrame {
                     get();
 
                     if (downloadSucceeded) {
-                        scanLibraryFolder();
+//                        scanLibraryFolder();
                         publish("Library refreshed.");
                     }
                 } catch (Exception e) {
@@ -263,40 +273,40 @@ public class MainWindow extends javax.swing.JFrame {
         pnlMain.setVisible(true);
         loginPanel.setVisible(false);
         preferences.setVisible(false);
-        libraryPanel.setVisible(false);
+        libraryPanel.setVisible(true);
+        libraryPanel.loadMedia();
+        pnlMain.revalidate();
+        pnlMain.repaint();
     }
 
     public void showPreferencesWindow() {
         loginPanel.setVisible(false);
         pnlMain.setVisible(false);
-        libraryPanel.setVisible(false);
         preferences.setVisible(true);
         preferences.repaint();
     }
 
-    public void showLibraryWindow() {
-        loginPanel.setVisible(false);
-        pnlMain.setVisible(false);
-        preferences.setVisible(false);
-        libraryPanel.setModelLibrary(dlmDownloaded);
-        libraryPanel.setVisible(true);
-        libraryPanel.repaint();
-    }
+//    public void showLibraryWindow() {
+//        loginPanel.setVisible(false);
+//        pnlMain.setVisible(false);
+//        preferences.setVisible(false);
+//        libraryPanel.setVisible(true);
+//        libraryPanel.repaint();
+//    }
 
     public void showLoginPanel() {
         loginPanel.setVisible(true);
         pnlMain.setVisible(false);
         preferences.setVisible(false);
-        libraryPanel.setModelLibrary(dlmDownloaded);
-        libraryPanel.setVisible(false);
         libraryPanel.repaint();
+        loginPanel.clearTextAreas();
     }
 
     private void addFileToLibrary(String finalFilePath) throws IOException {
         File file = new File(finalFilePath);
         if (file.exists()) {
             DownloadedFile newDownloadedFile = new DownloadedFile(file);
-            dlmDownloaded.addElement(newDownloadedFile);
+            dlmDownloadedFile.addElement(newDownloadedFile);
         } else {
             throw new IOException("The file could not be found in: " + finalFilePath);
         }
@@ -317,7 +327,7 @@ public class MainWindow extends javax.swing.JFrame {
             return;
         }
 
-        dlmDownloaded.clear();
+        dlmMedia.clear();
 
         File[] filesInDir = libraryDir.listFiles();
         if (filesInDir == null) {
@@ -332,7 +342,7 @@ public class MainWindow extends javax.swing.JFrame {
                         || name.endsWith(".wav") || name.endsWith(".m4a")) {
                     try {
                         DownloadedFile df = new DownloadedFile(file);
-                        dlmDownloaded.addElement(df);
+                        dlmDownloadedFile.addElement(df);
                     } catch (Exception e) {
                         System.err.println("Error: " + file.getName());
                     }
@@ -353,8 +363,30 @@ public class MainWindow extends javax.swing.JFrame {
 
     public void setToken(String token) {
         this.token = token;
+
+        if (getMediaPollingBean() != null) {
+            getMediaPollingBean().setToken(token);
+            try {
+                getMediaPollingBean().setRunning(true);
+                System.out.println("Polling Started");
+            } catch (Exception ex) {
+                System.out.println(ex.getMessage());
+            }
+        }
     }
 
+    public MediaPollingBean getMediaPollingBean() {
+
+        if (this.mediaPollingBean == null) {
+            this.mediaPollingBean = new MediaPollingBean();
+
+            String apiUrl = mediaPollingBean.getApiUrl();
+            
+            this.mediaPollingBean.setApiUrl(apiUrl);
+
+        }
+        return this.mediaPollingBean;
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -375,14 +407,11 @@ public class MainWindow extends javax.swing.JFrame {
         btnPreferences = new javax.swing.JButton();
         cmbResolucion = new javax.swing.JComboBox<>();
         chkOnlyAudio = new javax.swing.JCheckBox();
-        btnPlayLast = new javax.swing.JButton();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        lstDownloaded = new javax.swing.JList<>();
-        lblDownloadedFiles = new javax.swing.JLabel();
         btnLibrary = new javax.swing.JButton();
         cmbAudioFormat = new javax.swing.JComboBox<>();
         lblLogo = new javax.swing.JLabel();
         btnLogout = new javax.swing.JButton();
+        mediaPollingBean = new es.perelluent.mediapollingbean.MediaPollingBean();
         jMenuBar1 = new javax.swing.JMenuBar();
         mnuFile = new javax.swing.JMenu();
         mniExit = new javax.swing.JMenuItem();
@@ -394,22 +423,25 @@ public class MainWindow extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Tubify");
         setBounds(new java.awt.Rectangle(100, 100, 100, 100));
-        setMinimumSize(new java.awt.Dimension(900, 900));
+        setMaximumSize(new java.awt.Dimension(1500, 1000));
+        setMinimumSize(new java.awt.Dimension(1500, 1000));
         setResizable(false);
-        setSize(new java.awt.Dimension(900, 900));
+        setSize(new java.awt.Dimension(1500, 1000));
         getContentPane().setLayout(null);
 
-        pnlMain.setPreferredSize(new java.awt.Dimension(1100, 700));
+        pnlMain.setMinimumSize(new java.awt.Dimension(1500, 1000));
+        pnlMain.setName(""); // NOI18N
+        pnlMain.setPreferredSize(new java.awt.Dimension(1500, 1000));
         pnlMain.setLayout(null);
 
         lblDownloadVideo.setText("Download video");
         pnlMain.add(lblDownloadVideo);
-        lblDownloadVideo.setBounds(160, 60, 100, 16);
+        lblDownloadVideo.setBounds(160, 50, 100, 16);
 
         txtUrl.setText("Paste your link...");
         txtUrl.setCaretColor(new java.awt.Color(51, 51, 255));
         pnlMain.add(txtUrl);
-        txtUrl.setBounds(50, 100, 340, 22);
+        txtUrl.setBounds(50, 90, 340, 22);
 
         btnDownload.setText("Download");
         btnDownload.addActionListener(new java.awt.event.ActionListener() {
@@ -418,18 +450,18 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
         pnlMain.add(btnDownload);
-        btnDownload.setBounds(50, 150, 99, 40);
+        btnDownload.setBounds(50, 140, 99, 40);
 
         prg1.setForeground(new java.awt.Color(51, 51, 255));
         pnlMain.add(prg1);
-        prg1.setBounds(50, 240, 340, 20);
+        prg1.setBounds(50, 230, 340, 20);
 
         txaDownloadResult.setColumns(20);
         txaDownloadResult.setRows(5);
         jScrollPane1.setViewportView(txaDownloadResult);
 
         pnlMain.add(jScrollPane1);
-        jScrollPane1.setBounds(50, 280, 340, 375);
+        jScrollPane1.setBounds(50, 270, 340, 375);
 
         btnPreferences.setText("Preferences");
         btnPreferences.addActionListener(new java.awt.event.ActionListener() {
@@ -438,11 +470,11 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
         pnlMain.add(btnPreferences);
-        btnPreferences.setBounds(450, 100, 121, 23);
+        btnPreferences.setBounds(450, 90, 121, 23);
 
         cmbResolucion.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "FullHD", "720p", "480p" }));
         pnlMain.add(cmbResolucion);
-        cmbResolucion.setBounds(210, 160, 173, 22);
+        cmbResolucion.setBounds(210, 150, 173, 22);
 
         chkOnlyAudio.setText("Only Audio");
         chkOnlyAudio.addActionListener(new java.awt.event.ActionListener() {
@@ -451,26 +483,7 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
         pnlMain.add(chkOnlyAudio);
-        chkOnlyAudio.setBounds(50, 210, 83, 31);
-
-        btnPlayLast.setText("Play from List");
-        btnPlayLast.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnPlayLastActionPerformed(evt);
-            }
-        });
-        pnlMain.add(btnPlayLast);
-        btnPlayLast.setBounds(450, 660, 259, 23);
-
-        jScrollPane2.setViewportView(lstDownloaded);
-
-        pnlMain.add(jScrollPane2);
-        jScrollPane2.setBounds(450, 280, 259, 375);
-
-        lblDownloadedFiles.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblDownloadedFiles.setText("Downloaded Files");
-        pnlMain.add(lblDownloadedFiles);
-        lblDownloadedFiles.setBounds(490, 210, 156, 16);
+        chkOnlyAudio.setBounds(50, 200, 83, 31);
 
         btnLibrary.setText("Go to Library");
         btnLibrary.addActionListener(new java.awt.event.ActionListener() {
@@ -479,14 +492,14 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
         pnlMain.add(btnLibrary);
-        btnLibrary.setBounds(590, 100, 120, 23);
+        btnLibrary.setBounds(590, 90, 120, 23);
 
         cmbAudioFormat.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "mp3", "wav", "m4a", "best" }));
         cmbAudioFormat.setEnabled(false);
         pnlMain.add(cmbAudioFormat);
-        cmbAudioFormat.setBounds(210, 210, 170, 22);
+        cmbAudioFormat.setBounds(210, 200, 170, 22);
         pnlMain.add(lblLogo);
-        lblLogo.setBounds(100, 60, 41, 16);
+        lblLogo.setBounds(100, 50, 41, 16);
 
         btnLogout.setText("Logout");
         btnLogout.addActionListener(new java.awt.event.ActionListener() {
@@ -495,10 +508,20 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
         pnlMain.add(btnLogout);
-        btnLogout.setBounds(710, 20, 72, 23);
+        btnLogout.setBounds(1120, 30, 72, 23);
+
+        mediaPollingBean.setApiUrl("https://difreenet9.azurewebsites.net");
+        mediaPollingBean.setPollingInterval(30);
+        try {
+            mediaPollingBean.setRunning(true);
+        } catch (java.lang.Exception e1) {
+            e1.printStackTrace();
+        }
+        pnlMain.add(mediaPollingBean);
+        mediaPollingBean.setBounds(50, 650, 90, 100);
 
         getContentPane().add(pnlMain);
-        pnlMain.setBounds(0, 0, 820, 720);
+        pnlMain.setBounds(0, 0, 1500, 1000);
 
         mnuFile.setText("File");
 
@@ -577,49 +600,12 @@ public class MainWindow extends javax.swing.JFrame {
         dialog.setVisible(true);
     }//GEN-LAST:event_mniAboutActionPerformed
 
-    private void btnPlayLastActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPlayLastActionPerformed
-
-        DownloadedFile selectedFile = lstDownloaded.getSelectedValue();
-
-        if (selectedFile == null) {
-            JOptionPane.showMessageDialog(this,
-                    "Please select a file from the list to play.",
-                    "No file selected",
-                    JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
-
-        String filePath = selectedFile.getFilePath();
-        if (filePath == null || filePath.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "File data is corrupt (no path).",
-                    "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        try {
-            File fileToOpen = new File(filePath);
-
-            if (Desktop.isDesktopSupported() && fileToOpen.exists()) {
-                Desktop.getDesktop().open(fileToOpen);
-            } else {
-                JOptionPane.showMessageDialog(this,
-                        "Cannot open the file. It may have been moved or deleted.",
-                        "Error", JOptionPane.ERROR_MESSAGE);
-                dlmDownloaded.removeElement(selectedFile);
-            }
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(this,
-                    "An error occurred while trying to open the file:\n" + e.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }//GEN-LAST:event_btnPlayLastActionPerformed
-
     private void mniExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniExitActionPerformed
         System.exit(0);
     }//GEN-LAST:event_mniExitActionPerformed
 
     private void btnLibraryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLibraryActionPerformed
-        showLibraryWindow();
+
     }//GEN-LAST:event_btnLibraryActionPerformed
 
     private void btnLogoutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLogoutActionPerformed
@@ -631,6 +617,13 @@ public class MainWindow extends javax.swing.JFrame {
                 JOptionPane.YES_NO_OPTION
         );
         if (response == JOptionPane.YES_OPTION) {
+
+            try {
+                mediaPollingBean.setRunning(false);
+                mediaPollingBean.setToken(null);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
             this.token = null;
             loginPanel.clearTextAreas();
             showLoginPanel();
@@ -667,18 +660,15 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JButton btnDownload;
     private javax.swing.JButton btnLibrary;
     private javax.swing.JButton btnLogout;
-    private javax.swing.JButton btnPlayLast;
     private javax.swing.JButton btnPreferences;
     private javax.swing.JCheckBox chkOnlyAudio;
     private javax.swing.JComboBox<String> cmbAudioFormat;
     private javax.swing.JComboBox<String> cmbResolucion;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel lblDownloadVideo;
-    private javax.swing.JLabel lblDownloadedFiles;
     private javax.swing.JLabel lblLogo;
-    private javax.swing.JList<es.perelluent.tubify.dto.DownloadedFile> lstDownloaded;
+    private es.perelluent.mediapollingbean.MediaPollingBean mediaPollingBean;
     private javax.swing.JMenuItem mniAbout;
     private javax.swing.JMenuItem mniExit;
     private javax.swing.JMenuItem mniPreferences;
@@ -690,4 +680,20 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JTextArea txaDownloadResult;
     private javax.swing.JTextField txtUrl;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void onNewMediaFound(MediaPollingBeanEvent evt) {
+       List<Media> newFiles = evt.getFiles();
+        if (newFiles != null && !newFiles.isEmpty()) {
+            System.out.println("New media detected: " + newFiles.size() + " files.");
+            
+            for (Media m : newFiles) {
+                dlmMedia.addElement(m);
+            }
+            
+            if (libraryPanel.isVisible()) {
+                libraryPanel.repaint();
+            }
+        }
+    }
 }
