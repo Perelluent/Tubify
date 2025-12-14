@@ -16,6 +16,38 @@ With this app, users can:
 <img width="1486" height="993" alt="image" src="https://github.com/user-attachments/assets/f1ea85d9-20b8-4896-97b0-2e0f3c5d4a31" />
 <img width="886" height="893" alt="image" src="https://github.com/user-attachments/assets/e3250e05-cbd2-4862-a5f7-2006f0e6cc99" />
 
+## ☁️ Cloud Integration (Powered by [MediaPollingBean](https://github.com/Perelluent/MediaPollingBean))
+Tubify integrates a custom **Java Bean component** to provide enterprise-level features:
+- **Secure Authentication:** User Login with JWT Token persistence and "Remember Me" functionality.
+- **Real-Time Polling:** The app listens for changes on the server and updates the UI instantly when new files are added.
+- **Smart Playback:** Plays local files instantly with the system player.
+- ## 🛠️ MediaPollingBean Configuration & Usage
+
+### ⚙️ Configuration Properties of the MediaPollingBean
+
+You can configure these properties via the **NetBeans GUI Builder** (Properties Window) or programmatically in your code.
+
+| Property | Type | Description |
+| :--- | :--- | :--- |
+| **`apiUrl`** | `String` | **Required.** The base URL of the API (e.g., `http://localhost:5000`). Setting this property initializes the internal `ApiClient`. |
+| **`pollingInterval`** | `int` | Time in **seconds** between server checks. The bean automatically converts this to milliseconds for the internal Timer. |
+| **`running`** | `boolean` | Controls the background service. Setting this to `true` starts the polling `Timer`; setting it to `false` stops it. |
+| **`token`** | `String` | The JWT Bearer token used for authenticated requests (`login`, `download`, `upload`). This is usually set automatically after a successful login. |
+
+
+### 🔌 API Methods
+
+The bean exposes several public methods to interact with the backend:
+
+* **`login(String email, String password)`**: Authenticates the user, stores the received JWT token internally, and returns it.
+* **`getAllMedia()`**: Returns a `List<LibraryItem>` containing all files available on the server.
+* **`download(int id, File destFile)`**: Downloads the file with the specified ID to the local destination.
+* **`uploadFileMultipart(File file, String downloadedFromUrl)`**: Uploads a local file to the cloud.
+* **`startPolling()`**: Manually triggers a check for new media (usually handled automatically by the timer).
+
+### 📡 Event Handling
+
+The component uses a custom event system to notify your application when new files are detected on the server.
 
 ## 🧰 Setup Instructions
 
