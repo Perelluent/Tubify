@@ -12,10 +12,9 @@ With this app, users can:
 - 📂 Manage Library: View a unified table of Local vs Cloud files.
 
 ## Screenshots
-<img width="886" height="893" alt="image" src="https://github.com/user-attachments/assets/8cc0bfac-dfcf-4f58-a83f-4ecf45e3e17f" />
-<img width="886" height="893" alt="image" src="https://github.com/user-attachments/assets/dc7443fe-1b9b-49c9-a99c-e79084b5aab6" />
+<img width="1486" height="993" alt="image" src="https://github.com/user-attachments/assets/e0281857-5ade-4275-a13f-a44434bc139b" />
+<img width="1486" height="993" alt="image" src="https://github.com/user-attachments/assets/f1ea85d9-20b8-4896-97b0-2e0f3c5d4a31" />
 <img width="886" height="893" alt="image" src="https://github.com/user-attachments/assets/e3250e05-cbd2-4862-a5f7-2006f0e6cc99" />
-<img width="886" height="893" alt="image" src="https://github.com/user-attachments/assets/8d6f4445-fe34-4253-a004-17c58bd90487" />
 
 
 ## 🧰 Setup Instructions
