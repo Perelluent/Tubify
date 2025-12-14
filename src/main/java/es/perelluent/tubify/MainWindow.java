@@ -288,13 +288,6 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
         preferences.repaint();
     }
 
-//    public void showLibraryWindow() {
-//        loginPanel.setVisible(false);
-//        pnlMain.setVisible(false);
-//        preferences.setVisible(false);
-//        libraryPanel.setVisible(true);
-//        libraryPanel.repaint();
-//    }
 
     public void showLoginPanel() {
         loginPanel.setVisible(true);
@@ -409,7 +402,6 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
         btnPreferences = new javax.swing.JButton();
         cmbResolucion = new javax.swing.JComboBox<>();
         chkOnlyAudio = new javax.swing.JCheckBox();
-        btnLibrary = new javax.swing.JButton();
         cmbAudioFormat = new javax.swing.JComboBox<>();
         lblLogo = new javax.swing.JLabel();
         btnLogout = new javax.swing.JButton();
@@ -486,15 +478,6 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
         });
         pnlMain.add(chkOnlyAudio);
         chkOnlyAudio.setBounds(50, 200, 83, 31);
-
-        btnLibrary.setText("Go to Library");
-        btnLibrary.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnLibraryActionPerformed(evt);
-            }
-        });
-        pnlMain.add(btnLibrary);
-        btnLibrary.setBounds(590, 90, 120, 23);
 
         cmbAudioFormat.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "mp3", "wav", "m4a", "best" }));
         cmbAudioFormat.setEnabled(false);
@@ -606,10 +589,6 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
         System.exit(0);
     }//GEN-LAST:event_mniExitActionPerformed
 
-    private void btnLibraryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLibraryActionPerformed
-
-    }//GEN-LAST:event_btnLibraryActionPerformed
-
     private void btnLogoutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLogoutActionPerformed
 
         int response = JOptionPane.showConfirmDialog(
@@ -660,7 +639,6 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnDownload;
-    private javax.swing.JButton btnLibrary;
     private javax.swing.JButton btnLogout;
     private javax.swing.JButton btnPreferences;
     private javax.swing.JCheckBox chkOnlyAudio;
