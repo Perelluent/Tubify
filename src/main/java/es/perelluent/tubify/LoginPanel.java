@@ -14,7 +14,6 @@ import java.awt.event.FocusEvent;
 import java.net.URL;
 import java.util.prefs.Preferences;
 import javax.swing.*;
-import javax.swing.border.Border;
 
 /**
  *
@@ -50,7 +49,6 @@ public class LoginPanel extends JPanel {
         initComponents();
         setupLayoutAndAddComponents();
         setupListeners();
-        checkRememberMe();
     }
 
     private void setupLayoutAndAddComponents() {
@@ -124,7 +122,7 @@ public class LoginPanel extends JPanel {
 
         });
     }
-    private void checkRememberMe() {
+    public void checkRememberMe() {
         boolean remember = prefs.getBoolean(prefRememberMe, false);
         if (remember) {
             String savedEmail = prefs.get(prefEmail, "");

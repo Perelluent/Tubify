@@ -10,20 +10,25 @@ import es.perelluent.mediapollingbean.dto.Media;
  *
  * @author Perelluent
  */
-public class MediaFile {
+public class LibraryItem {
 
-    private Media mediaCloud;
+    private Media cloudMedia;
     private DownloadedFile localFile;
 
-    public MediaFile() {
+    public LibraryItem() {
     }
 
-    public Media getMediaCloud() {
-        return mediaCloud;
+    public LibraryItem(Media cloudMedia, DownloadedFile localFile) {
+        this.cloudMedia = cloudMedia;
+        this.localFile = localFile;
     }
 
-    public void setMediaCloud(Media mediaCloud) {
-        this.mediaCloud = mediaCloud;
+    public Media getCloudMedia() {
+        return cloudMedia;
+    }
+
+    public void setCloudMedia(Media cloudMedia) {
+        this.cloudMedia = cloudMedia;
     }
 
     public DownloadedFile getLocalFile() {
@@ -35,8 +40,8 @@ public class MediaFile {
     }
 
     public String getMediaName() {
-        if (mediaCloud != null) {
-            return mediaCloud.mediaFileName;
+        if (cloudMedia != null) {
+            return cloudMedia.mediaFileName;
         }
         if (localFile != null) {
             return localFile.getFileName();
@@ -44,10 +49,10 @@ public class MediaFile {
             return "Unknown";
         }
     }
-    
+
     public String getMediaId() {
-        if (mediaCloud != null) {
-            return mediaCloud.toString();
+        if (cloudMedia != null) {
+            return cloudMedia.toString();
         }
         if (localFile != null) {
             return null;
@@ -55,23 +60,43 @@ public class MediaFile {
             return "Unknown";
         }
     }
-    
+
     public String getMediaMimeType() {
-        if (mediaCloud != null) {
-            return mediaCloud.mediaMimeType;
+        if (cloudMedia != null) {
+            return cloudMedia.mediaMimeType;
         }
         if (localFile != null) {
             return localFile.getMimeType();
         } else {
             return "Unknown";
         }
-    } 
+    }
+
     public String getMediaDownloadedUrl() {
-        if (mediaCloud != null) {
-            return mediaCloud.downloadedFromUrl;
+        if (cloudMedia != null) {
+            return cloudMedia.downloadedFromUrl;
         }
         if (localFile != null) {
             return localFile.getFilePath();
+        } else {
+            return "Unknown";
+        }
+    }
+
+    public String getStatus() {
+        if (cloudMedia != null && localFile != null) {
+            return "Downloaded & Local";
+        } else if (cloudMedia != null && localFile == null) {
+            return "Cloud Only";
+        } else if (cloudMedia == null && localFile != null) {
+            return "Local Only";
+        }
+        return "Error";
+    }
+
+    public String getSize() {
+        if (localFile != null) {
+            return localFile.getFileSize();
         } else {
             return "Unknown";
         }

@@ -5,16 +5,23 @@
 package es.perelluent.tubify;
 
 import es.perelluent.mediapollingbean.dto.Media;
+import es.perelluent.tubify.dto.DownloadedFile;
+import es.perelluent.tubify.dto.LibraryItem;
 import es.perelluent.tubify.dto.LibraryTableModel;
 import java.awt.BorderLayout;
-import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.URI;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.JOptionPane;
 import javax.swing.RowFilter;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.table.TableRowSorter;
 
 /**
@@ -26,6 +33,7 @@ public class LibraryPanel extends javax.swing.JPanel {
     private final MainWindow main;
     private LibraryTableModel libraryModel;
     private TableRowSorter<LibraryTableModel> sorter;
+
     /**
      * Creates new form LibraryPanel
      *
@@ -35,60 +43,126 @@ public class LibraryPanel extends javax.swing.JPanel {
         this.main = main;
 
         this.setLayout(new BorderLayout());
-        
+
         initComponents();
-        
+
         libraryModel = new LibraryTableModel();
         tblLibrary.setModel(libraryModel);
-        
+
         this.add(jScrollPane1, BorderLayout.CENTER);
-        
+
         sorter = new TableRowSorter<>(libraryModel);
         tblLibrary.setRowSorter(sorter);
-        
+
         cmbFilter.addItem(new FilterCategory("Show All", ""));
         cmbFilter.addItem(new FilterCategory("Videos Only", "video"));
         cmbFilter.addItem(new FilterCategory("Audio Only", "audio"));
-        
+
         cmbFilter.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 FilterCategory selected = (FilterCategory) cmbFilter.getSelectedItem();
                 filterTable(selected.getFilterValue());
             }
-            
+
         });
-        
-        btnDelete.addActionListener(new ActionListener(){
+
+        btnDelete.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 btnDeleteActionPerformed(e);
             }
-            
+
         });
     }
-    
-    public void loadMedia() {
 
+    public void loadMedia() {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                try{
-                    if (main.getMediaPollingBean().getToken() == null) {
-                        System.out.println("Token error. You're not logged in");
-                        return;
+                try {
+                    // Obtener la lista de la nube
+                    List<Media> cloudList = null;
+                    // Cargamos si el token no es null
+                    if (main.getMediaPollingBean().getToken() != null) {
+                        try {
+                            cloudList = main.getMediaPollingBean().getAllMedia(); // cojemos todos los archivos
+                        } catch (Exception e) {
+                            System.err.println("Error cargando nube: " + e.getMessage());
+                        }
                     }
-                    final List<Media> cloudFiles = main.getMediaPollingBean().getAllMedia();
-                    SwingUtilities.invokeLater(() -> {
-                    libraryModel.setMediaList(cloudFiles);
-                });
+
+                    // Obtener la lista local
+                    List<DownloadedFile> localList = new ArrayList<>();
+                    // Leemos las preferencias directamente desde el archivo properties para asegurar la ruta
+                    String userHome = System.getProperty("user.home");
+                    String propsPath = userHome + File.separator + "TubifySettings.properties";
+                    java.util.Properties props = new java.util.Properties();
+
+                    File propsFile = new File(propsPath);
+                    if (propsFile.exists()) {
+                        try (FileInputStream in = new java.io.FileInputStream(propsFile)) {
+                            props.load(in);
+                            String folderPath = props.getProperty("libraryPath");
+
+                            if (folderPath != null) {
+                                File folder = new File(folderPath);
+                                if (folder.exists() && folder.isDirectory()) {
+                                    File[] files = folder.listFiles();
+                                    if (files != null) {
+                                        for (File f : files) {
+                                            if (f.isFile() && !f.getName().startsWith(".")) {
+                                                localList.add(new DownloadedFile(f));
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+
+                    // Lista para final de las dos listas fusionadas
+                    final List<LibraryItem> mergedList = mergeLists(cloudList, localList);
+
+                    // Actualizamos la tabla.
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            libraryModel.setItems(mergedList);
+                        }
+                    });
+
                 } catch (Exception e) {
-                    System.out.println(e.getMessage());
+                    e.printStackTrace();
                 }
             }
         });
         thread.start();
-    } 
+    }
+
+    private List<LibraryItem> mergeLists(List<Media> cloud, List<DownloadedFile> local) {
+        Map<String, LibraryItem> map = new HashMap<>();
+        // mapeamos los archivos que hay en la nube
+        if (cloud != null) {
+            for (Media m : cloud) {
+                map.put(m.mediaFileName, new LibraryItem(m, null));
+            }
+        }
+        // mapeamos los archivos locales
+        if (local != null) {
+            for (DownloadedFile df : local) {
+                String name = df.getFileName();
+                if (map.containsKey(name)) {
+                    map.get(name).setLocalFile(df);
+                } else {
+                    map.put(name, new LibraryItem(null, df));
+                }
+            }
+        }
+        return new ArrayList<>(map.values());
+    }
 
     private void filterTable(String query) {
         if (query.isEmpty()) {
@@ -97,6 +171,7 @@ public class LibraryPanel extends javax.swing.JPanel {
             sorter.setRowFilter(RowFilter.regexFilter("(?i)" + query, 2));
         }
     }
+
     class FilterCategory {
 
         private final String displayName;
@@ -117,7 +192,8 @@ public class LibraryPanel extends javax.swing.JPanel {
         }
 
     }
-    public void showNewMediaList(List<Media> newFiles) {
+
+    public void showNewMediaList(List<LibraryItem> newFiles) {
         if (newFiles == null || newFiles.isEmpty()) {
             return;
         }
@@ -132,7 +208,6 @@ public class LibraryPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        btnBack = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         tblLibrary = new javax.swing.JTable();
         btnDelete = new javax.swing.JButton();
@@ -143,15 +218,6 @@ public class LibraryPanel extends javax.swing.JPanel {
 
         setPreferredSize(new java.awt.Dimension(1100, 700));
         setLayout(null);
-
-        btnBack.setText("Back");
-        btnBack.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnBackActionPerformed(evt);
-            }
-        });
-        add(btnBack);
-        btnBack.setBounds(730, 50, 72, 23);
 
         tblLibrary.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -201,31 +267,25 @@ public class LibraryPanel extends javax.swing.JPanel {
         btnPlay.setBounds(720, 550, 75, 23);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackActionPerformed
-        this.setVisible(false);
-        main.showMainWindow();
-        main.repaint();
-    }//GEN-LAST:event_btnBackActionPerformed
-
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
-    int viewRow = tblLibrary.getSelectedRow();
-        if (viewRow == -1) {
-            JOptionPane.showMessageDialog(this, "Select a file to delete.");
-            return;
-        }
-
-        int modelRow = tblLibrary.convertRowIndexToModel(viewRow);
-        Media fileToDelete = libraryModel.getMediaAt(modelRow);
-
-        int choice = JOptionPane.showConfirmDialog(this,
-                "Remove '" + fileToDelete.mediaFileName + "' from list?\n(Note: API delete not supported yet)",
-                "Confirm", JOptionPane.YES_NO_OPTION);
-
-        if (choice == JOptionPane.YES_OPTION) {
-            // Nota: El ApiClient proporcionado NO tiene método delete. 
-            // Solo lo quitamos de la vista visual.
-            libraryModel.removeMedia(modelRow);
-        }
+//    int viewRow = tblLibrary.getSelectedRow();
+//        if (viewRow == -1) {
+//            JOptionPane.showMessageDialog(this, "Select a file to delete.");
+//            return;
+//        }
+//
+//        int modelRow = tblLibrary.convertRowIndexToModel(viewRow);
+//        LibraryItem fileToDelete = libraryModel.getMediaAt(modelRow);
+//
+//        int choice = JOptionPane.showConfirmDialog(this,
+//                "Remove '" + fileToDelete.mediaFileName + "' from list?\n(Note: API delete not supported yet)",
+//                "Confirm", JOptionPane.YES_NO_OPTION);
+//
+//        if (choice == JOptionPane.YES_OPTION) {
+//            // Nota: El ApiClient proporcionado NO tiene método delete. 
+//            // Solo lo quitamos de la vista visual.
+//            libraryModel.removeMedia(modelRow);
+//        }
 
     }//GEN-LAST:event_btnDeleteActionPerformed
 
@@ -236,24 +296,78 @@ public class LibraryPanel extends javax.swing.JPanel {
             return;
         }
         int modelRow = tblLibrary.convertRowIndexToModel(viewRow);
-        Media selectedMedia = libraryModel.getMediaAt(modelRow);
+        LibraryItem selectedMedia = libraryModel.getItemAt(modelRow);
 
-        if (selectedMedia != null && selectedMedia.blobUrl != null) {
-            try {
-
-                Desktop.getDesktop().browse(new URI(selectedMedia.blobUrl));
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Error opening URL: " + ex.getMessage());
-            }
-        } else {
-            JOptionPane.showMessageDialog(this, "Invalid media URL.");
+        if (selectedMedia == null) {
+            return;
         }
-    
+
+        // si está en local
+        if (selectedMedia.getLocalFile() != null) {
+            File file = new File(selectedMedia.getLocalFile().getFilePath());
+
+            if (file.exists()) {
+                try {
+                    java.awt.Desktop.getDesktop().open(file);
+                } catch (IOException ex) {
+                    System.getLogger(LibraryPanel.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+                }
+                return;
+            } else {
+                // Si no existe la ruta
+                javax.swing.JOptionPane.showMessageDialog(this,
+                        "File missing from disk: " + file.getAbsolutePath(),
+                        "Local File Error", javax.swing.JOptionPane.WARNING_MESSAGE);
+            }
+        }
+
+        // Si está solo en la nube
+        if (selectedMedia.getCloudMedia() != null) {
+            playCloudMedia(selectedMedia.getCloudMedia());
+        }
+    }
+
+    private void playCloudMedia(Media media) {
+        // Usamos un SwingWorker para no congelar la pantalla mientras baja
+        SwingWorker<File, Void> worker = new SwingWorker<>() {
+            @Override
+            protected File doInBackground() throws Exception {
+                // Crear archivo temporal
+                String ext = media.mediaFileName.contains(".")
+                        ? media.mediaFileName.substring(media.mediaFileName.lastIndexOf(".")) : ".tmp";
+                File tempFile = File.createTempFile("tubify_stream_", ext);
+                tempFile.deleteOnExit();
+
+                main.getMediaPollingBean().download(media.id, tempFile); //
+
+                return tempFile;
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    File tempFile = get();
+                    java.awt.Desktop.getDesktop().open(tempFile);
+                } catch (Exception ex) {
+                    javax.swing.JOptionPane.showMessageDialog(LibraryPanel.this,
+                            "Error streaming file: " + ex.getMessage());
+                    ex.printStackTrace();
+                }
+            }
+        };
+
+        // Mostrar cursor de espera
+        this.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+        worker.addPropertyChangeListener(evt -> {
+            if (javax.swing.SwingWorker.StateValue.DONE == evt.getNewValue()) {
+                this.setCursor(java.awt.Cursor.getDefaultCursor());
+            }
+        });
+        worker.execute();
     }//GEN-LAST:event_btnPlayActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnBack;
     private javax.swing.JButton btnDelete;
     private javax.swing.JButton btnPlay;
     private javax.swing.JComboBox<FilterCategory> cmbFilter;

@@ -9,6 +9,7 @@ import es.perelluent.MediaPollingBeanEvent.MediaPollingBeanEvent;
 import es.perelluent.MediaPollingBeanEvent.MediaPollingBeanListener;
 import es.perelluent.mediapollingbean.dto.Media;
 import es.perelluent.tubify.dto.DownloadedFile;
+import es.perelluent.tubify.dto.LibraryItem;
 import java.awt.Image;
 import java.io.BufferedReader;
 import java.io.File;
@@ -47,7 +48,7 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
 
     private String token = null;
     
-    private final DefaultListModel<Media> dlmMedia;
+    private final DefaultListModel<LibraryItem> dlmMedia;
     private final DefaultListModel<DownloadedFile> dlmDownloadedFile;
 
     /**
@@ -89,6 +90,7 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
         setLocationRelativeTo(null);
 
         mediaPollingBean.addMediaPollingBeanListener(this);
+        loginPanel.checkRememberMe();
 
     }
 
@@ -685,15 +687,20 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
     public void onNewMediaFound(MediaPollingBeanEvent evt) {
        List<Media> newFiles = evt.getFiles();
         if (newFiles != null && !newFiles.isEmpty()) {
-            System.out.println("New media detected: " + newFiles.size() + " files.");
+            System.out.println("MainWindow: Nuevos archivos detectados (" + newFiles.size() + ")");
             
-            for (Media m : newFiles) {
-                dlmMedia.addElement(m);
+            // 2. IMPORTANTE: No usamos dlmMedia. 
+            // Le decimos a la librería que recalcule la fusión (Nube + Local)
+            if (libraryPanel != null && libraryPanel.isVisible()) {
+                libraryPanel.loadMedia(); //
+            } else {
+                // Si la librería no está visible, opcionalmente podemos mostrar una notificación
+                // o simplemente cargar los datos en segundo plano
+                 if (libraryPanel != null) libraryPanel.loadMedia();
             }
             
-            if (libraryPanel.isVisible()) {
-                libraryPanel.repaint();
-            }
+            // Opcional: Mostrar un pequeño aviso al usuario
+            // javax.swing.JOptionPane.showMessageDialog(this, "New files found in cloud!");
         }
     }
 }

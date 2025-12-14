@@ -5,7 +5,6 @@
 
 package es.perelluent.tubify.dto;
 
-import es.perelluent.mediapollingbean.dto.Media;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
@@ -16,63 +15,48 @@ import javax.swing.table.AbstractTableModel;
  */
 public class LibraryTableModel extends AbstractTableModel {
 
-    private final String[] columnNames = {"ID", "File Name", "Type", "Origin"};
-    private List<Media> mediaList;
+    private final String[] columnNames = {"ID", "File Name", "Type", "Size", "Origin","Status"};
+    private List<LibraryItem> items;
 
     public LibraryTableModel() {
-        this.mediaList = new ArrayList<>();
+        this.items = new ArrayList<>();
     }
 
-    public LibraryTableModel(List<Media> mediaList) {
-        this.mediaList = mediaList;
-    }
-
-    public void setMediaList(List<Media> mediaList) {
-        this.mediaList = mediaList;
+    public void setItems(List<LibraryItem> items) {
+        this.items = items;
         fireTableDataChanged();
     }
-
-    public void addMedia(Media media) {
-        this.mediaList.add(media);
-        fireTableRowsInserted(mediaList.size() - 1, mediaList.size() - 1);
+    
+    public LibraryItem getItemAt(int rowIndex) {
+        if (rowIndex >= 0 && rowIndex < items.size()) return items.get(rowIndex);
+        return null;
     }
-
-    public void removeMedia(int rowIndex) {
-        this.mediaList.remove(rowIndex);
+    
+    public void removeItem(int rowIndex) {
+        this.items.remove(rowIndex);
         fireTableRowsDeleted(rowIndex, rowIndex);
     }
 
-    public Media getMediaAt(int rowIndex) {
-        if (rowIndex >= 0 && rowIndex < mediaList.size()) {
-            return mediaList.get(rowIndex);
-        }
-        return null;
-    }
-
     @Override
-    public int getRowCount() {
-        return mediaList.size();
-    }
-
+    public int getRowCount() { return items.size(); }
     @Override
-    public int getColumnCount() {
-        return columnNames.length;
-    }
-
+    public int getColumnCount() { return columnNames.length; }
     @Override
-    public String getColumnName(int column) {
-        return columnNames[column];
-    }
+    public String getColumnName(int column) { return columnNames[column]; }
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        Media m = mediaList.get(rowIndex);
+        LibraryItem item = items.get(rowIndex);
+        
         switch (columnIndex) {
-            case 0: return m.id;
-            case 1: return m.mediaFileName;
-            case 2: return m.mediaMimeType;
-            case 3: return m.downloadedFromUrl;
+            case 0: if (item.getCloudMedia() != null) return item.getCloudMedia().id;
+                else return "Local File";
             default: return null;
+            case 1: return item.getMediaName();
+            case 2: return item.getMediaMimeType();
+            case 3: return item.getSize();
+            case 4: return item.getMediaDownloadedUrl();
+            case 5: return item.getStatus();
         }
     }
 }
