@@ -40,14 +40,14 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
     private final String PROPERTIES_PATH = System.getProperty("user.home") + File.separator + "TubifySettings.properties";
     private final URL imageUrl = getClass().getResource("/images/LogoIsotypeTrans.png");
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(MainWindow.class.getName());
-    
+
     private final Preferences preferences = new Preferences(this);
     private LibraryPanel libraryPanel = new LibraryPanel(this);
     private final LoginPanel loginPanel;
     private final Properties props = new Properties();
 
     private String token = null;
-    
+
     private final DefaultListModel<LibraryItem> dlmMedia;
     private final DefaultListModel<DownloadedFile> dlmDownloadedFile;
 
@@ -70,20 +70,17 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
         lblLogo.setBounds(70, 25, 60, 60);
         pnlMain.add(lblLogo);
         libraryPanel = new LibraryPanel(this);
-        libraryPanel.setBounds(500, 170, getWidth(),getHeight());
+        libraryPanel.setBounds(500, 170, getWidth(), getHeight());
         pnlMain.add(libraryPanel);
-
 
         preferences.setBounds(0, 0, getWidth(), getHeight());
         preferences.setVisible(false);
         getContentPane().add(preferences);
 
-
         loginPanel = new LoginPanel(mediaPollingBean, this);
         loginPanel.setBounds(0, 0, 1500, 1000);
         loginPanel.setVisible(true);
         getContentPane().add(loginPanel);
-       
 
         pnlMain.setVisible(false);
 
@@ -125,7 +122,11 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
                         String selectedAudioFormat = (String) cmbAudioFormat.getSelectedItem();
                         cmd.add("-x");
                         cmd.add("--audio-format");
-                        cmd.add(selectedAudioFormat);
+                        if ("best".equalsIgnoreCase(selectedAudioFormat)) {
+                            cmd.add("mp3");
+                        } else {
+                            cmd.add(selectedAudioFormat);
+                        }
 
                     } else {
                         String selectedResolution = (String) cmbResolucion.getSelectedItem();
@@ -180,7 +181,8 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
             }
 
             @Override
-            protected void process(List<String> chunks) {
+            protected void process(List<String> chunks
+            ) {
                 System.out.println("Process> " + chunks.size() + " lines recieved. In thread " + Thread.currentThread());
                 for (String line : chunks) {
                     System.out.println("\t" + line);
@@ -209,7 +211,7 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
                     get();
 
                     if (downloadSucceeded) {
-//                        scanLibraryFolder();
+                        libraryPanel.loadMedia();
                         publish("Library refreshed.");
                     }
                 } catch (Exception e) {
@@ -287,7 +289,6 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
         preferences.setVisible(true);
         preferences.repaint();
     }
-
 
     public void showLoginPanel() {
         loginPanel.setVisible(true);
@@ -376,7 +377,7 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
             this.mediaPollingBean = new MediaPollingBean();
 
             String apiUrl = mediaPollingBean.getApiUrl();
-            
+
             this.mediaPollingBean.setApiUrl(apiUrl);
 
         }
@@ -663,10 +664,10 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
 
     @Override
     public void onNewMediaFound(MediaPollingBeanEvent evt) {
-       List<Media> newFiles = evt.getFiles();
+        List<Media> newFiles = evt.getFiles();
         if (newFiles != null && !newFiles.isEmpty()) {
             System.out.println("MainWindow: Nuevos archivos detectados (" + newFiles.size() + ")");
-            
+
             // 2. IMPORTANTE: No usamos dlmMedia. 
             // Le decimos a la librería que recalcule la fusión (Nube + Local)
             if (libraryPanel != null && libraryPanel.isVisible()) {
@@ -674,9 +675,11 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
             } else {
                 // Si la librería no está visible, opcionalmente podemos mostrar una notificación
                 // o simplemente cargar los datos en segundo plano
-                 if (libraryPanel != null) libraryPanel.loadMedia();
+                if (libraryPanel != null) {
+                    libraryPanel.loadMedia();
+                }
             }
-            
+
             // Opcional: Mostrar un pequeño aviso al usuario
             // javax.swing.JOptionPane.showMessageDialog(this, "New files found in cloud!");
         }

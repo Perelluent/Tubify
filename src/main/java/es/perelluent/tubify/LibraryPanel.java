@@ -13,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -215,6 +216,7 @@ public class LibraryPanel extends javax.swing.JPanel {
         lblMediaLibrary = new javax.swing.JLabel();
         cmbFilter = new javax.swing.JComboBox<>();
         btnPlay = new javax.swing.JButton();
+        btnUpload = new javax.swing.JButton();
 
         setPreferredSize(new java.awt.Dimension(1100, 700));
         setLayout(null);
@@ -264,7 +266,16 @@ public class LibraryPanel extends javax.swing.JPanel {
             }
         });
         add(btnPlay);
-        btnPlay.setBounds(720, 550, 75, 23);
+        btnPlay.setBounds(720, 560, 75, 23);
+
+        btnUpload.setText("UPLOAD");
+        btnUpload.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUploadActionPerformed(evt);
+            }
+        });
+        add(btnUpload);
+        btnUpload.setBounds(290, 560, 260, 23);
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
@@ -366,10 +377,73 @@ public class LibraryPanel extends javax.swing.JPanel {
         worker.execute();
     }//GEN-LAST:event_btnPlayActionPerformed
 
+    private void btnUploadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUploadActionPerformed
+        int viewRow = tblLibrary.getSelectedRow();
+        if (viewRow == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a local file to upload.");
+            return;
+        }
+
+        int modelRow = tblLibrary.convertRowIndexToModel(viewRow);
+        LibraryItem item = libraryModel.getItemAt(modelRow);
+        // Si no está en local
+        if (item.getLocalFile() == null) {
+            JOptionPane.showMessageDialog(this, 
+                "This file is only in the Cloud. You cannot upload it again.", 
+                "Upload Error", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        // Si ya está subido
+        if (item.getCloudMedia() != null) {
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "This file is already synchronized with the Cloud.", 
+                "Info", javax.swing.JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        // Subida
+            SwingWorker<Void, Void> worker = new javax.swing.SwingWorker<>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+
+                File fileToUpload = new File(item.getLocalFile().getFilePath());
+                
+                if (!fileToUpload.exists()) {
+                    throw new FileNotFoundException("File not found: " + fileToUpload.getAbsolutePath());
+                }
+
+                main.getMediaPollingBean().uploadFileMultipart(fileToUpload,""); 
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    get();
+                    JOptionPane.showMessageDialog(LibraryPanel.this, 
+                        "Upload Successful!", 
+                        "Success", JOptionPane.INFORMATION_MESSAGE);
+                    
+                    // Recargar la lista de items
+                    loadMedia(); 
+                    
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    JOptionPane.showMessageDialog(LibraryPanel.this, 
+                        "Upload Failed: " + e.getMessage(), 
+                        "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        };
+        worker.execute();
+    }//GEN-LAST:event_btnUploadActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnDelete;
     private javax.swing.JButton btnPlay;
+    private javax.swing.JButton btnUpload;
     private javax.swing.JComboBox<FilterCategory> cmbFilter;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblFilter;
