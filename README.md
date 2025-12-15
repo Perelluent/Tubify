@@ -13,7 +13,7 @@ With this app, users can:
 
 ## Screenshots
 <img width="1486" height="993" alt="image" src="https://github.com/user-attachments/assets/e0281857-5ade-4275-a13f-a44434bc139b" />
-<img width="1486" height="993" alt="image" src="https://github.com/user-attachments/assets/f1ea85d9-20b8-4896-97b0-2e0f3c5d4a31" />
+<img width="1486" height="993" alt="image" src="https://github.com/user-attachments/assets/928f75a9-97c6-495c-a6d6-f1dde614bf1f" />
 <img width="886" height="893" alt="image" src="https://github.com/user-attachments/assets/e3250e05-cbd2-4862-a5f7-2006f0e6cc99" />
 
 ## ☁️ Cloud Integration (Powered by [MediaPollingBean](https://github.com/Perelluent/MediaPollingBean))
