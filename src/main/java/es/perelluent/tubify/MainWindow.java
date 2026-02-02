@@ -302,8 +302,13 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
     public void showPreferencesWindow() {
         loginPanel.setVisible(false);
         pnlMain.setVisible(false);
+        this.getContentPane().setLayout(new BorderLayout());
+
         preferences.setVisible(true);
-        preferences.repaint();
+        this.getContentPane().add(preferences, BorderLayout.CENTER);
+
+        this.revalidate();
+        this.repaint();
     }
 
     public void showLoginPanel() {
@@ -603,8 +608,16 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
     }//GEN-LAST:event_chkOnlyAudioActionPerformed
 
     private void mniAboutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniAboutActionPerformed
-        AboutPanel dialog = new AboutPanel();
-        dialog.setVisible(true);
+        AboutPanel about = new AboutPanel();
+
+        pnlMain.setVisible(false);
+        this.getContentPane().setLayout(new BorderLayout());
+
+        about.setVisible(true);
+        this.getContentPane().add(about, BorderLayout.CENTER);
+
+        this.revalidate();
+        this.repaint();
     }//GEN-LAST:event_mniAboutActionPerformed
 
     private void mniExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniExitActionPerformed
