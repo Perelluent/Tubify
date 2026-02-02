@@ -14,7 +14,10 @@ With this app, users can:
 ## Screenshots
 <img width="1920" height="1032" alt="image" src="https://github.com/user-attachments/assets/49ee96c7-31bc-4fbf-b1d8-a71a3ed3ce23" />
 <img width="1486" height="993" alt="image" src="https://github.com/user-attachments/assets/928f75a9-97c6-495c-a6d6-f1dde614bf1f" />
-<img width="886" height="893" alt="image" src="https://github.com/user-attachments/assets/e3250e05-cbd2-4862-a5f7-2006f0e6cc99" />
+<img width="1920" height="1032" alt="image" src="https://github.com/user-attachments/assets/ffe97294-a0fd-4759-b87a-7d40a666c739" />
+<img width="1920" height="1032" alt="image" src="https://github.com/user-attachments/assets/e73c7727-13bb-4c2a-b96f-e419a5b7fe60" />
+
+
 
 ## ☁️ Cloud Integration (Powered by [MediaPollingBean](https://github.com/Perelluent/MediaPollingBean))
 Tubify integrates a custom **Java Bean component** to provide enterprise-level features:
