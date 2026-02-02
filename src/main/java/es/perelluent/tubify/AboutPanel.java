@@ -1,26 +1,24 @@
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JDialog.java to edit this template
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
  */
 package es.perelluent.tubify;
 
+import java.awt.Color;
+
 /**
  *
- * @author Perelluent
+ * @author morda
  */
-public class AboutDialog extends javax.swing.JDialog {
-    
+public class AboutPanel extends javax.swing.JPanel {
 
     /**
-     * Creates new form AboutDialog
-     * @param parent
-     * @param modal
+     * Creates new form ItsAboutPanel
      */
-    public AboutDialog(java.awt.Frame parent, boolean modal) {
-        super(parent, modal);
-        
+    public AboutPanel() {
+        setBackground(Color.BLACK);
         initComponents();
-        setLocationRelativeTo(parent);
+        
     }
 
     /**
@@ -35,13 +33,6 @@ public class AboutDialog extends javax.swing.JDialog {
         jScrollPane1 = new javax.swing.JScrollPane();
         txaAboutText = new javax.swing.JTextArea();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("About");
-        setMinimumSize(new java.awt.Dimension(600, 400));
-        setPreferredSize(new java.awt.Dimension(600, 400));
-        setResizable(false);
-        getContentPane().setLayout(null);
-
         txaAboutText.setEditable(false);
         txaAboutText.setColumns(1);
         txaAboutText.setRows(1);
@@ -54,15 +45,28 @@ public class AboutDialog extends javax.swing.JDialog {
         txaAboutText.setRequestFocusEnabled(false);
         jScrollPane1.setViewportView(txaAboutText);
 
-        getContentPane().add(jScrollPane1);
-        jScrollPane1.setBounds(110, 50, 340, 210);
-
-        pack();
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 400, Short.MAX_VALUE)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addGap(0, 0, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(0, 0, Short.MAX_VALUE)))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addGap(0, 0, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(0, 0, Short.MAX_VALUE)))
+        );
     }// </editor-fold>//GEN-END:initComponents
 
-    /**
-     * @param args the command line arguments
-     */
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane1;

@@ -23,26 +23,11 @@ public class DownloadedFile {
     private String mimeType;
     private LocalDateTime downloadDate;
 
-    public DownloadedFile(String fileName, String filePath, long fileSize, String mimeType, LocalDateTime downloadDate) {
-        this.fileName = fileName;
-        this.filePath = filePath;
-        this.fileSize = fileSize;
-        this.mimeType = mimeType;
-        this.downloadDate = downloadDate;
-    }
-
-    public DownloadedFile(File file) {
+    public DownloadedFile(File file){
         this.fileName = file.getName();
         this.filePath = file.getAbsolutePath();
-        this.fileSize = file.length();
+        this.fileSize = file.length() / (1024 * 1024);
         this.downloadDate = LocalDateTime.now();
-
-        try {
-            Path path = file.toPath();
-            this.mimeType = Files.probeContentType(path);
-        } catch (IOException ex) {
-            System.getLogger(DownloadedFile.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
-        }
     }
 
     public DownloadedFile() {

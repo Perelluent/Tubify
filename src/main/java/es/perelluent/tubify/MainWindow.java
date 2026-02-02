@@ -27,8 +27,10 @@ import java.util.regex.Pattern;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
+import javax.swing.UIManager;
 
 /**
  *
@@ -57,6 +59,9 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
     public MainWindow() {
 
         initComponents();
+        JMenuItem mniTheme = new JMenuItem("Toggle Dark/Light Mode");
+        mniTheme.addActionListener(e -> changeTheme());
+        mnuEdit.add(mniTheme);
 
         dlmMedia = new DefaultListModel<>();
         dlmDownloadedFile = new DefaultListModel<>();
@@ -467,7 +472,7 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
         pnlMain.add(btnPreferences);
         btnPreferences.setBounds(450, 90, 121, 23);
 
-        cmbResolucion.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "FullHD", "720p", "480p" }));
+        cmbResolucion.setModel(new javax.swing.DefaultComboBoxModel<>(new String[]{"FullHD", "720p", "480p"}));
         pnlMain.add(cmbResolucion);
         cmbResolucion.setBounds(210, 150, 173, 22);
 
@@ -480,7 +485,7 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
         pnlMain.add(chkOnlyAudio);
         chkOnlyAudio.setBounds(50, 200, 83, 31);
 
-        cmbAudioFormat.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "mp3", "wav", "m4a", "best" }));
+        cmbAudioFormat.setModel(new javax.swing.DefaultComboBoxModel<>(new String[]{"mp3", "wav", "m4a", "best"}));
         cmbAudioFormat.setEnabled(false);
         pnlMain.add(cmbAudioFormat);
         cmbAudioFormat.setBounds(210, 200, 170, 22);
@@ -582,7 +587,7 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
     }//GEN-LAST:event_chkOnlyAudioActionPerformed
 
     private void mniAboutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mniAboutActionPerformed
-        AboutDialog dialog = new AboutDialog(this, true);
+        AboutPanel dialog = new AboutPanel();
         dialog.setVisible(true);
     }//GEN-LAST:event_mniAboutActionPerformed
 
@@ -616,26 +621,27 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
-            logger.log(java.util.logging.Level.SEVERE, null, ex);
-        }
+
+        com.formdev.flatlaf.FlatDarkLaf.setup();
         //</editor-fold>
 
         /* Create and display the form */
         Locale.setDefault(Locale.ENGLISH);
         java.awt.EventQueue.invokeLater(() -> new MainWindow().setVisible(true));
+    }
+
+    public void changeTheme() {
+        try {
+            if (com.formdev.flatlaf.FlatLaf.isLafDark()) {
+                UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatLightLaf());
+            } else {
+                UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatDarkLaf());
+            }
+            // Magia: actualiza toda la jerarquía de componentes de la ventana actual
+            com.formdev.flatlaf.FlatLaf.updateUI();
+        } catch (Exception ex) {
+            System.err.println("Error al cambiar el tema: " + ex.getMessage());
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
