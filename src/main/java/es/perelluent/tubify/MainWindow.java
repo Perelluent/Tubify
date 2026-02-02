@@ -10,12 +10,17 @@ import es.perelluent.MediaPollingBeanEvent.MediaPollingBeanListener;
 import es.perelluent.mediapollingbean.dto.Media;
 import es.perelluent.tubify.dto.DownloadedFile;
 import es.perelluent.tubify.dto.LibraryItem;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
@@ -59,6 +64,11 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
     public MainWindow() {
 
         initComponents();
+
+        this.getContentPane().setLayout(new BorderLayout());
+        this.setResizable(true);
+        this.setMinimumSize(new Dimension(800, 600));
+
         JMenuItem mniTheme = new JMenuItem("Toggle Dark/Light Mode");
         mniTheme.addActionListener(e -> changeTheme());
         mnuEdit.add(mniTheme);
@@ -85,11 +95,12 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
         loginPanel = new LoginPanel(mediaPollingBean, this);
         loginPanel.setBounds(0, 0, 1500, 1000);
         loginPanel.setVisible(true);
-        getContentPane().add(loginPanel);
+        this.getContentPane().add(loginPanel, BorderLayout.CENTER);
+        this.setLocationRelativeTo(null);
 
         pnlMain.setVisible(false);
 
-        setLocationRelativeTo(null);
+
 
         mediaPollingBean.addMediaPollingBeanListener(this);
         loginPanel.checkRememberMe();
@@ -296,11 +307,15 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
     }
 
     public void showLoginPanel() {
-        loginPanel.setVisible(true);
         pnlMain.setVisible(false);
         preferences.setVisible(false);
-        libraryPanel.repaint();
-        loginPanel.clearTextAreas();
+        this.getContentPane().setLayout(new BorderLayout());
+
+        loginPanel.setVisible(true);
+        this.getContentPane().add(loginPanel, BorderLayout.CENTER);
+
+        this.revalidate();
+        this.repaint();
     }
 
     private void addFileToLibrary(String finalFilePath) throws IOException {
@@ -425,9 +440,10 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
         setBounds(new java.awt.Rectangle(100, 100, 100, 100));
         setMaximumSize(new java.awt.Dimension(1500, 1000));
         setMinimumSize(new java.awt.Dimension(1500, 1000));
-        setResizable(false);
+        setResizable(true);
         setSize(new java.awt.Dimension(1500, 1000));
         getContentPane().setLayout(null);
+        setLocationRelativeTo(null);
 
         pnlMain.setMinimumSize(new java.awt.Dimension(1500, 1000));
         pnlMain.setName(""); // NOI18N
@@ -621,11 +637,21 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
      * @param args the command line arguments
      */
     public static void main(String args[]) {
+        try {
+            // Configuramos una nueva fuente
+            InputStream is = MainWindow.class.getResourceAsStream("/fonts/Montserrat-Regular.ttf");
+            Font montserrat = Font.createFont(Font.TRUETYPE_FONT, is).deriveFont(13f);
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            ge.registerFont(montserrat);
 
-        com.formdev.flatlaf.FlatDarkLaf.setup();
-        //</editor-fold>
+            // Configurar FlatLaf para que use esa fuente por defecto
+            UIManager.put("defaultFont", montserrat);
 
-        /* Create and display the form */
+            com.formdev.flatlaf.FlatDarkLaf.setup();
+        } catch (Exception e) {
+            System.err.println("No se pudo cargar Montserrat, usando fuente por defecto.");
+            com.formdev.flatlaf.FlatDarkLaf.setup();
+        }
         Locale.setDefault(Locale.ENGLISH);
         java.awt.EventQueue.invokeLater(() -> new MainWindow().setVisible(true));
     }
@@ -637,7 +663,6 @@ public class MainWindow extends javax.swing.JFrame implements MediaPollingBeanLi
             } else {
                 UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatDarkLaf());
             }
-            // Magia: actualiza toda la jerarquía de componentes de la ventana actual
             com.formdev.flatlaf.FlatLaf.updateUI();
         } catch (Exception ex) {
             System.err.println("Error al cambiar el tema: " + ex.getMessage());
