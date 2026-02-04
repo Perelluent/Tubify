@@ -8,7 +8,7 @@ import es.perelluent.mediapollingbean.dto.Media;
 import es.perelluent.tubify.dto.DownloadedFile;
 import es.perelluent.tubify.dto.LibraryItem;
 import es.perelluent.tubify.dto.LibraryTableModel;
-import java.awt.BorderLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -19,288 +19,166 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.swing.JOptionPane;
-import javax.swing.RowFilter;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
+import javax.swing.*;
 import javax.swing.table.TableRowSorter;
+import net.miginfocom.swing.MigLayout;
 
-/**
- *
- * @author morda
- */
-public class LibraryPanel extends javax.swing.JPanel {
+public class LibraryPanel extends JPanel {
 
     private final MainWindow main;
     private LibraryTableModel libraryModel;
-    private TableRowSorter<LibraryTableModel> sorter;
+    private JTable tblLibrary;
+    private JScrollPane scrollPane;
+    private JTextField txtSearch;
+    private String token = null;
+    private final LoginPanel loginPanel;
 
-    /**
-     * Creates new form LibraryPanel
-     *
-     * @param main
-     */
+    // Botones
+    private JButton btnPlay, btnUpload, btnDelete, btnLogout, btnPrefences;
+
     public LibraryPanel(MainWindow main) {
         this.main = main;
-
-        this.setLayout(new BorderLayout());
-
+        this.token = main.getToken();
+        this.loginPanel = main.getLoginPanel();
+        setLayout(new MigLayout("fill, insets 10 0 10 10", "[grow, fill]", "[][grow][]"));
         initComponents();
 
-        libraryModel = new LibraryTableModel();
-        tblLibrary.setModel(libraryModel);
+        loadMedia();
+    }
 
-        this.add(jScrollPane1, BorderLayout.CENTER);
+    private void initComponents() {
 
-        sorter = new TableRowSorter<>(libraryModel);
-        tblLibrary.setRowSorter(sorter);
+        JPanel pnlHeader = new JPanel(new MigLayout("fillx, insets 0", "[][grow, center][right]"));
+        pnlHeader.setOpaque(false);
 
-        cmbFilter.addItem(new FilterCategory("Show All", ""));
-        cmbFilter.addItem(new FilterCategory("Videos Only", "video"));
-        cmbFilter.addItem(new FilterCategory("Audio Only", "audio"));
+        JLabel lblTitle = new JLabel("LIBRARY");
+        lblTitle.setFont(new Font("Montserrat", Font.BOLD, 22));
 
-        cmbFilter.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                FilterCategory selected = (FilterCategory) cmbFilter.getSelectedItem();
-                filterTable(selected.getFilterValue());
+        JLabel lblLogo = new JLabel();
+        java.net.URL imageUrl = getClass().getResource("/images/LogoIsotypeTrans.png");
+        if (imageUrl != null) {
+            lblLogo.setIcon(MainWindow.UpscaleIcon(new ImageIcon(imageUrl), 60, 60));
+        }
+
+        txtSearch = new JTextField();
+        txtSearch.putClientProperty("JTextField.placeholderText", "Search media...");
+        txtSearch.putClientProperty("FlatLaf.style", "arc: 12");
+        txtSearch.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                filter(txtSearch.getText());
             }
-
         });
 
+        btnPrefences = createStyledButton("PREFERENCES", null);
+        btnPrefences.setForeground(Color.WHITE);
+
+        pnlHeader.add(lblLogo);
+        pnlHeader.add(lblTitle, "gapleft 5");
+        pnlHeader.add(txtSearch, "width 250!");
+        pnlHeader.add(btnPrefences);
+
+        libraryModel = new LibraryTableModel();
+        tblLibrary = new JTable(libraryModel);
+        tblLibrary.getColumnModel().getColumn(0).setPreferredWidth(800);
+        tblLibrary.getColumnModel().getColumn(1).setPreferredWidth(50);
+        tblLibrary.getColumnModel().getColumn(2).setPreferredWidth(50);
+        tblLibrary.setRowHeight(40);
+        tblLibrary.setShowVerticalLines(false);
+        tblLibrary.getTableHeader().setReorderingAllowed(false);
+        tblLibrary.setFont(new Font("Montserrat", Font.PLAIN, 13));
+
+        scrollPane = new JScrollPane(tblLibrary);
+        scrollPane.putClientProperty("FlatLaf.style", null);
+        scrollPane.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
+
+        JPanel pnlActions = new JPanel(new MigLayout("fillx, insets 10 0 0 0", "[]10[]push[]"));
+        pnlActions.setOpaque(false);
+
+        btnDelete = createStyledButton("DELETE FILE", null);
+        btnUpload = createStyledButton("UPLOAD TO CLOUD", null);
+        btnPlay = createStyledButton("PLAY MEDIA", Color.decode("#c6458f"));
+        btnPlay.setForeground(Color.WHITE);
+
+        btnLogout = createStyledButton("LOGOUT", Color.DARK_GRAY);
+        btnLogout.setForeground(Color.WHITE);
+
+        // Listeners de botones
+        btnPlay.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                btnPlayActionPerformed(e);
+            }
+        });
+        btnUpload.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                btnUploadActionPerformed(e);
+            }
+        });
         btnDelete.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 btnDeleteActionPerformed(e);
             }
-
         });
-    }
-
-    public void loadMedia() {
-        Thread thread = new Thread(new Runnable() {
+        btnLogout.addActionListener(new ActionListener() {
             @Override
-            public void run() {
-                try {
-                    // Obtener la lista de la nube
-                    List<Media> cloudList = null;
-                    // Cargamos si el token no es null
-                    if (main.getMediaPollingBean().getToken() != null) {
-                        try {
-                            cloudList = main.getMediaPollingBean().getAllMedia(); // cojemos todos los archivos
-                        } catch (Exception e) {
-                            System.err.println("Error cargando nube: " + e.getMessage());
-                        }
-                    }
-
-                    // Obtener la lista local
-                    List<DownloadedFile> localList = new ArrayList<>();
-                    // Leemos las preferencias directamente desde el archivo properties para asegurar la ruta
-                    String userHome = System.getProperty("user.home");
-                    String propsPath = userHome + File.separator + "TubifySettings.properties";
-                    java.util.Properties props = new java.util.Properties();
-
-                    File propsFile = new File(propsPath);
-                    if (propsFile.exists()) {
-                        try (FileInputStream in = new java.io.FileInputStream(propsFile)) {
-                            props.load(in);
-                            String folderPath = props.getProperty("libraryPath");
-
-                            if (folderPath != null) {
-                                File folder = new File(folderPath);
-                                if (folder.exists() && folder.isDirectory()) {
-                                    File[] files = folder.listFiles();
-                                    if (files != null) {
-                                        for (File f : files) {
-                                            if (f.isFile() && !f.getName().startsWith(".")) {
-                                                localList.add(new DownloadedFile(f));
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
-                    }
-
-                    // Lista para final de las dos listas fusionadas
-                    final List<LibraryItem> mergedList = mergeLists(cloudList, localList);
-
-                    // Actualizamos la tabla.
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            libraryModel.setItems(mergedList);
-                        }
-                    });
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            public void actionPerformed(ActionEvent e) {
+                btnLogoutActionPerformed(e);
             }
+
         });
-        thread.start();
+        btnPrefences.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                main.showPreferences();
+            }
+
+        });
+
+        pnlActions.add(btnDelete, "h 40!");
+        pnlActions.add(btnUpload, "h 40!");
+        pnlActions.add(btnPlay, "h 50!, w 220!, center");
+        pnlActions.add(btnPrefences, "h 40!, center");
+        pnlActions.add(btnLogout, "h 40!, right");
+
+        // Añadimos al panel principal
+        add(pnlHeader, "wrap, gapbottom 10");
+        add(scrollPane, "grow, wrap");
+        add(pnlActions, "growx");
     }
 
-    private List<LibraryItem> mergeLists(List<Media> cloud, List<DownloadedFile> local) {
-        Map<String, LibraryItem> map = new HashMap<>();
-        // mapeamos los archivos que hay en la nube
-        if (cloud != null) {
-            for (Media m : cloud) {
-                map.put(m.mediaFileName, new LibraryItem(m, null));
-            }
+    // método que crea botones iguales.
+    private JButton createStyledButton(String text, Color bg) {
+        JButton btn = new JButton(text);
+        btn.setFont(new Font("Montserrat", Font.BOLD, 12));
+        btn.putClientProperty("JButton.buttonType", "roundRect");
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        if (bg != null) {
+            btn.setBackground(bg);
         }
-        // mapeamos los archivos locales
-        if (local != null) {
-            for (DownloadedFile df : local) {
-                String name = df.getFileName();
-                if (map.containsKey(name)) {
-                    map.get(name).setLocalFile(df);
-                } else {
-                    map.put(name, new LibraryItem(null, df));
-                }
-            }
-        }
-        return new ArrayList<>(map.values());
+        return btn;
     }
 
-    private void filterTable(String query) {
-        if (query.isEmpty()) {
+    // filtrar la tabla
+    private void filter(String query) {
+        TableRowSorter<LibraryTableModel> sorter = new TableRowSorter<>(libraryModel);
+        tblLibrary.setRowSorter(sorter);
+        if (query.length() == 0) {
             sorter.setRowFilter(null);
         } else {
-            sorter.setRowFilter(RowFilter.regexFilter("(?i)" + query, 2));
+            try {
+                String escapedQuery = java.util.regex.Pattern.quote(query);
+
+                sorter.setRowFilter(RowFilter.regexFilter("(?i)" + escapedQuery));
+            } catch (java.util.regex.PatternSyntaxException e) {
+                System.err.println("Error en el patrón de búsqueda: " + e.getMessage());
+            }
         }
     }
 
-    class FilterCategory {
-
-        private final String displayName;
-        private final String FilterValue;
-
-        public FilterCategory(String displayName, String FilterValue) {
-            this.displayName = displayName;
-            this.FilterValue = FilterValue;
-        }
-
-        public String getFilterValue() {
-            return FilterValue;
-        }
-
-        @Override
-        public String toString() {
-            return displayName;
-        }
-
-    }
-
-    public void showNewMediaList(List<LibraryItem> newFiles) {
-        if (newFiles == null || newFiles.isEmpty()) {
-            return;
-        }
-    }
-
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
-
-        jScrollPane1 = new javax.swing.JScrollPane();
-        tblLibrary = new javax.swing.JTable();
-        btnDelete = new javax.swing.JButton();
-        lblFilter = new javax.swing.JLabel();
-        lblMediaLibrary = new javax.swing.JLabel();
-        cmbFilter = new javax.swing.JComboBox<>();
-        btnPlay = new javax.swing.JButton();
-        btnUpload = new javax.swing.JButton();
-
-        setPreferredSize(new java.awt.Dimension(1100, 700));
-        setLayout(null);
-
-        tblLibrary.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
-        ));
-        jScrollPane1.setViewportView(tblLibrary);
-
-        add(jScrollPane1);
-        jScrollPane1.setBounds(10, 90, 790, 450);
-
-        btnDelete.setText("Delete File");
-        btnDelete.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnDeleteActionPerformed(evt);
-            }
-        });
-        add(btnDelete);
-        btnDelete.setBounds(10, 560, 110, 23);
-
-        lblFilter.setText("Filter");
-        add(lblFilter);
-        lblFilter.setBounds(20, 20, 41, 16);
-
-        lblMediaLibrary.setFont(new java.awt.Font("sansserif", 0, 30)); // NOI18N
-        lblMediaLibrary.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblMediaLibrary.setText("MEDIA LIBRARY");
-        add(lblMediaLibrary);
-        lblMediaLibrary.setBounds(260, 30, 290, 40);
-
-        add(cmbFilter);
-        cmbFilter.setBounds(20, 50, 170, 22);
-
-        btnPlay.setText("PLAY");
-        btnPlay.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnPlayActionPerformed(evt);
-            }
-        });
-        add(btnPlay);
-        btnPlay.setBounds(720, 560, 75, 23);
-
-        btnUpload.setText("UPLOAD");
-        btnUpload.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnUploadActionPerformed(evt);
-            }
-        });
-        add(btnUpload);
-        btnUpload.setBounds(290, 560, 260, 23);
-    }// </editor-fold>//GEN-END:initComponents
-
-    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
-//    int viewRow = tblLibrary.getSelectedRow();
-//        if (viewRow == -1) {
-//            JOptionPane.showMessageDialog(this, "Select a file to delete.");
-//            return;
-//        }
-//
-//        int modelRow = tblLibrary.convertRowIndexToModel(viewRow);
-//        LibraryItem fileToDelete = libraryModel.getMediaAt(modelRow);
-//
-//        int choice = JOptionPane.showConfirmDialog(this,
-//                "Remove '" + fileToDelete.mediaFileName + "' from list?\n(Note: API delete not supported yet)",
-//                "Confirm", JOptionPane.YES_NO_OPTION);
-//
-//        if (choice == JOptionPane.YES_OPTION) {
-//            // Nota: El ApiClient proporcionado NO tiene método delete. 
-//            // Solo lo quitamos de la vista visual.
-//            libraryModel.removeMedia(modelRow);
-//        }
-
-    }//GEN-LAST:event_btnDeleteActionPerformed
-
-    private void btnPlayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPlayActionPerformed
+    // Action Events de los botones
+    private void btnPlayActionPerformed(java.awt.event.ActionEvent evt) {
         int viewRow = tblLibrary.getSelectedRow();
         if (viewRow == -1) {
             JOptionPane.showMessageDialog(this, "Please select a file to play.");
@@ -335,6 +213,27 @@ public class LibraryPanel extends javax.swing.JPanel {
         // Si está solo en la nube
         if (selectedMedia.getCloudMedia() != null) {
             playCloudMedia(selectedMedia.getCloudMedia());
+        }
+    }
+    private void btnLogoutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLogoutActionPerformed
+
+        int response = JOptionPane.showConfirmDialog(
+                null,
+                "¿Are you sure you want to logout?",
+                "Logout",
+                JOptionPane.YES_NO_OPTION
+        );
+        if (response == JOptionPane.YES_OPTION) {
+
+            try {
+                main.getMediaPollingBean().setRunning(false);
+                main.getMediaPollingBean().setToken(null);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            this.token = null;
+            loginPanel.clearTextAreas();
+            main.showLoginPanel();
         }
     }
 
@@ -375,9 +274,9 @@ public class LibraryPanel extends javax.swing.JPanel {
             }
         });
         worker.execute();
-    }//GEN-LAST:event_btnPlayActionPerformed
+    }
 
-    private void btnUploadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUploadActionPerformed
+    private void btnUploadActionPerformed(java.awt.event.ActionEvent evt) {
         int viewRow = tblLibrary.getSelectedRow();
         if (viewRow == -1) {
             JOptionPane.showMessageDialog(this, "Please select a local file to upload.");
@@ -388,32 +287,32 @@ public class LibraryPanel extends javax.swing.JPanel {
         LibraryItem item = libraryModel.getItemAt(modelRow);
         // Si no está en local
         if (item.getLocalFile() == null) {
-            JOptionPane.showMessageDialog(this, 
-                "This file is only in the Cloud. You cannot upload it again.", 
-                "Upload Error", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "This file is only in the Cloud. You cannot upload it again.",
+                    "Upload Error", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        
+
         // Si ya está subido
         if (item.getCloudMedia() != null) {
-            javax.swing.JOptionPane.showMessageDialog(this, 
-                "This file is already synchronized with the Cloud.", 
-                "Info", javax.swing.JOptionPane.INFORMATION_MESSAGE);
+            javax.swing.JOptionPane.showMessageDialog(this,
+                    "This file is already synchronized with the Cloud.",
+                    "Info", javax.swing.JOptionPane.INFORMATION_MESSAGE);
             return;
         }
 
         // Subida
-            SwingWorker<Void, Void> worker = new javax.swing.SwingWorker<>() {
+        SwingWorker<Void, Void> worker = new javax.swing.SwingWorker<>() {
             @Override
             protected Void doInBackground() throws Exception {
 
                 File fileToUpload = new File(item.getLocalFile().getFilePath());
-                
+
                 if (!fileToUpload.exists()) {
                     throw new FileNotFoundException("File not found: " + fileToUpload.getAbsolutePath());
                 }
 
-                main.getMediaPollingBean().uploadFileMultipart(fileToUpload,""); 
+                main.getMediaPollingBean().uploadFileMultipart(fileToUpload, "");
                 return null;
             }
 
@@ -421,33 +320,113 @@ public class LibraryPanel extends javax.swing.JPanel {
             protected void done() {
                 try {
                     get();
-                    JOptionPane.showMessageDialog(LibraryPanel.this, 
-                        "Upload Successful!", 
-                        "Success", JOptionPane.INFORMATION_MESSAGE);
-                    
+                    JOptionPane.showMessageDialog(LibraryPanel.this,
+                            "Upload Successful!",
+                            "Success", JOptionPane.INFORMATION_MESSAGE);
+
                     // Recargar la lista de items
-                    loadMedia(); 
-                    
+                    loadMedia();
+
                 } catch (Exception e) {
                     e.printStackTrace();
-                    JOptionPane.showMessageDialog(LibraryPanel.this, 
-                        "Upload Failed: " + e.getMessage(), 
-                        "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(LibraryPanel.this,
+                            "Upload Failed: " + e.getMessage(),
+                            "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         };
         worker.execute();
-    }//GEN-LAST:event_btnUploadActionPerformed
+    }
 
+    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {
+//        int viewRow = tblLibrary.getSelectedRow();
+//        if (viewRow == -1) {
+//            JOptionPane.showMessageDialog(this, "Select a file to delete.");
+//            return;
+//        }
+//
+//        int modelRow = tblLibrary.convertRowIndexToModel(viewRow);
+//        LibraryItem fileToDelete = libraryModel.getMediaAt(modelRow);
+//
+//        int choice = JOptionPane.showConfirmDialog(this,
+//                "Remove '" + fileToDelete.mediaFileName + "' from list?\n(Note: API delete not supported yet)",
+//                "Confirm", JOptionPane.YES_NO_OPTION);
+//
+//        if (choice == JOptionPane.YES_OPTION) {
+//            // Nota: El ApiClient proporcionado NO tiene método delete. 
+//            // Solo lo quitamos de la vista visual.
+//            libraryModel.removeMedia(modelRow);
+//        }
+    }
+    // cargar la tabla
+    public void loadMedia() {
+        Thread thread = new Thread(() -> {
+            try {
+                List<Media> cloudList = null;
+                if (main.getMediaPollingBean().getToken() != null) {
+                    try {
+                        cloudList = main.getMediaPollingBean().getAllMedia();
+                    } catch (Exception e) {
+                        System.err.println("Error cargando nube: " + e.getMessage());
+                    }
+                }
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnDelete;
-    private javax.swing.JButton btnPlay;
-    private javax.swing.JButton btnUpload;
-    private javax.swing.JComboBox<FilterCategory> cmbFilter;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JLabel lblFilter;
-    private javax.swing.JLabel lblMediaLibrary;
-    private javax.swing.JTable tblLibrary;
-    // End of variables declaration//GEN-END:variables
+                List<DownloadedFile> localList = new ArrayList<>();
+                String userHome = System.getProperty("user.home");
+                String propsPath = userHome + File.separator + "TubifySettings.properties";
+                java.util.Properties props = new java.util.Properties();
+
+                File propsFile = new File(propsPath);
+                if (propsFile.exists()) {
+                    try (FileInputStream in = new FileInputStream(propsFile)) {
+                        props.load(in);
+                        String folderPath = props.getProperty("libraryPath");
+                        if (folderPath != null) {
+                            File folder = new File(folderPath);
+                            if (folder.exists() && folder.isDirectory()) {
+                                File[] files = folder.listFiles();
+                                if (files != null) {
+                                    for (File f : files) {
+                                        if (f.isFile() && !f.getName().startsWith(".")) {
+                                            localList.add(new DownloadedFile(f));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+
+                final List<LibraryItem> mergedList = mergeLists(cloudList, localList);
+                SwingUtilities.invokeLater(() -> libraryModel.setItems(mergedList));
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        thread.start();
+    }
+
+    // Combinar archivos en la nube y local
+    private List<LibraryItem> mergeLists(List<Media> cloud, List<DownloadedFile> local) {
+        Map<String, LibraryItem> map = new HashMap<>();
+        if (cloud != null) {
+            for (Media m : cloud) {
+                map.put(m.mediaFileName, new LibraryItem(m, null));
+            }
+        }
+        if (local != null) {
+            for (DownloadedFile df : local) {
+                String name = df.getFileName();
+                if (map.containsKey(name)) {
+                    map.get(name).setLocalFile(df);
+                } else {
+                    map.put(name, new LibraryItem(null, df));
+                }
+            }
+        }
+        return new ArrayList<>(map.values());
+    }
 }

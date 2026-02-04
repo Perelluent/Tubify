@@ -10,8 +10,6 @@ import static es.perelluent.tubify.MainWindow.UpscaleIcon;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.net.URL;
 import java.util.prefs.Preferences;
 import javax.swing.*;
@@ -51,29 +49,6 @@ public class LoginPanel extends JPanel {
         setLayout(new MigLayout("fill, insets 0", "[center]", "[center]"));
 
         initComponents();
-    }
-
-    public void checkRememberMe() {
-        boolean remember = prefs.getBoolean(prefRememberMe, false);
-        if (remember) {
-            String savedEmail = prefs.get(prefEmail, "");
-            String savedToken = prefs.get(prefToken, "");
-
-            if (!savedToken.isEmpty()) {
-                try {
-                    mediaPollingBean.setToken(savedToken);
-                    mainWindow.setToken(savedToken);
-                    mainWindow.showMainWindow();
-                    return;
-                } catch (Exception e) {
-                    prefs.remove(prefToken);
-                    lblError.setText("Session expired. Please login again.");
-                    System.out.println("Token validation failed: " + e.getMessage());
-                }
-            }
-            txtUser.setText(savedEmail);
-            chkRememberMe.setSelected(true);
-        }
     }
 
     private void initComponents() {
@@ -141,6 +116,29 @@ public class LoginPanel extends JPanel {
 
         add(pnlForm, "width 350!");
 
+    }
+
+    public void checkRememberMe() {
+        boolean remember = prefs.getBoolean(prefRememberMe, false);
+        if (remember) {
+            String savedEmail = prefs.get(prefEmail, "");
+            String savedToken = prefs.get(prefToken, "");
+
+            if (!savedToken.isEmpty()) {
+                try {
+                    mediaPollingBean.setToken(savedToken);
+                    mainWindow.setToken(savedToken);
+                    mainWindow.showMainWindow();
+                    return;
+                } catch (Exception e) {
+                    prefs.remove(prefToken);
+                    lblError.setText("Session expired. Please login again.");
+                    System.out.println("Token validation failed: " + e.getMessage());
+                }
+            }
+            txtUser.setText(savedEmail);
+            chkRememberMe.setSelected(true);
+        }
     }
 
     private void btnLoginActionPerformed(ActionEvent evt) throws Exception {

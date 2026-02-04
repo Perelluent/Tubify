@@ -8,16 +8,19 @@ package es.perelluent.tubify;
 import com.formdev.flatlaf.ui.FlatLineBorder;
 import static es.perelluent.tubify.MainWindow.UpscaleIcon;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.net.URL;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import net.miginfocom.swing.MigLayout;
@@ -27,25 +30,27 @@ import net.miginfocom.swing.MigLayout;
  * @author Perelluent
  */
 public class AboutPanel extends JPanel {
+    
+    private final MainWindow main;
 
-    public AboutPanel() {
-        // Centrado total en la pantalla
+    public AboutPanel(MainWindow main) {
+        this.main = main;
         setLayout(new MigLayout("fill, insets 0", "[center]", "[center]"));
         initComponents();
     }
 
     private void initComponents() {
 
-        JPanel pnlCard = new JPanel(new MigLayout("wrap, insets 40, gapy 12", "[grow, fill]"));
+        // Layout principal
+        JPanel pnlAbout = new JPanel(new MigLayout("wrap, insets 40, gapy 12", "[grow, fill]"));
 
-        pnlCard.setOpaque(true);
-        pnlCard.setBackground(UIManager.getColor("EditorPane.background"));
-        pnlCard.putClientProperty("FlatLaf.style", "arc: 25");
-        
-        pnlCard.setBorder(new CompoundBorder(
+        pnlAbout.setOpaque(true);
+        pnlAbout.putClientProperty("FlatLaf.style", "arc: 25");       
+        pnlAbout.setBorder(new CompoundBorder(
             new FlatLineBorder(new Insets(0,0,0,0), Color.GRAY, 1, 25),
             new EmptyBorder(10, 10, 10, 10)
         ));
+        //Logo
         JLabel lblLogo = new JLabel();
         URL imageUrl = getClass().getResource("/images/TubifyLogoTransparent.png");
         lblLogo = new JLabel();
@@ -59,7 +64,7 @@ public class AboutPanel extends JPanel {
         lblAuthor.setFont(new Font("Montserrat", Font.PLAIN, 16));
         
         JLabel lblCourse = new JLabel("DAM - Desarrollo de Interfaces");
-        lblCourse.setFont(new Font("Montserrat", Font.ITALIC, 14));
+        lblCourse.setFont(new Font("Montserrat", Font.PLAIN, 14));
         lblCourse.setForeground(Color.GRAY);
 
         JSeparator separator = new JSeparator();
@@ -77,20 +82,33 @@ public class AboutPanel extends JPanel {
         txtRepo.setEditable(false);
         txtRepo.setBorder(null);
         txtRepo.setOpaque(false);
-        txtRepo.setFont(new Font("Montserrat", Font.PLAIN, 12));
-        txtRepo.setForeground(Color.white); 
-
-        pnlCard.add(lblLogo, "align center, gapbottom 15");
-        pnlCard.add(lblAuthor, "align center");
-        pnlCard.add(lblCourse, "align center, gapbottom 10");
-        pnlCard.add(separator, "growx, gapbottom 10");
+        txtRepo.setFont(new Font("Montserrat", Font.PLAIN, 12)); 
         
-        pnlCard.add(lblResourcesTitle, "gapleft 5");
-        pnlCard.add(lblResources, "gapleft 15, gapbottom 10");
+        // Botón back
+        JButton btnBack = new JButton("Back to App");
+        btnBack.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnBack.putClientProperty("FlatLaf.style", "arc: 15; background: #c6458f; foreground: #ffffff");
         
-        pnlCard.add(lblRepoTitle, "gapleft 5");
-        pnlCard.add(txtRepo, "gapleft 15");
+        btnBack.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                main.showMainWindow();
+            }
+        });
 
-        add(pnlCard, "width 750!");
+        // Añadimos complementos al panel.
+        pnlAbout.add(lblLogo, "align center, gapbottom 15");
+        pnlAbout.add(lblAuthor, "align center");
+        pnlAbout.add(lblCourse, "align center, gapbottom 10");
+        pnlAbout.add(separator, "growx, gapbottom 10");
+        
+        pnlAbout.add(lblResourcesTitle, "gapleft 5");
+        pnlAbout.add(lblResources, "gapleft 15, gapbottom 10");
+        
+        pnlAbout.add(lblRepoTitle, "gapleft 5");
+        pnlAbout.add(txtRepo, "gapleft 15");
+        pnlAbout.add(btnBack, "h 40!, gaptop 20");
+
+        add(pnlAbout, "width 750!");
     }
 }

@@ -4,41 +4,24 @@
  */
 package es.perelluent.tubify;
 
-import java.awt.Color;
-import java.awt.Cursor;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.SwingWorker;
+import java.util.regex.*;
+import javax.swing.*;
 import net.miginfocom.swing.MigLayout;
 
-/**
- *
- * @author Perelluent
- */
 public class DownloadPanel extends JPanel {
 
-    private final MainWindow main;
+    private final String YTDLP_PATH = System.getenv("LOCALAPPDATA") + "\\yt-dlp\\yt-dlp.exe";
+    private final String PROPERTIES_PATH = System.getProperty("user.home") + File.separator + "TubifySettings.properties";
     private final Properties props = new Properties();
 
+    private final MainWindow main;
     private JTextField txtUrl;
     private JComboBox<String> cmbResolucion;
     private JCheckBox chkOnlyAudio;
@@ -46,195 +29,179 @@ public class DownloadPanel extends JPanel {
     private JButton btnDownload;
     private JProgressBar progressBar;
 
-    private final String YTDLP_PATH = System.getenv("LOCALAPPDATA") + "\\yt-dlp\\yt-dlp.exe";
-
     public DownloadPanel(MainWindow main) {
         this.main = main;
-        setLayout(new MigLayout("fill, insets 20", "[grow]", "[]20[]20[]20[grow]"));
-        setBackground(Color.BLACK);
 
+        setLayout(new MigLayout("fill, insets 10", "[grow]", "[]")); //Layout principal
+        
         initComponents();
     }
 
     private void initComponents() {
 
-        JLabel lblTitle = new JLabel("Download New Media");
-        add(lblTitle, "wrap");
+        JPanel pnlCard = new JPanel(new MigLayout("wrap, insets 20, gapy 10", "[grow, fill]")); // Layout del panel
+        pnlCard.putClientProperty("FlatLaf.style", "arc: 20");
 
-        JPanel pnlInput = new JPanel(new MigLayout("insets 0, fillx", "[][grow]", "[]"));
-        pnlInput.setOpaque(false);
+        JLabel lblTitle = new JLabel("DOWNLOAD");
+        lblTitle.setFont(new Font("Montserrat", Font.BOLD, 18));
+        pnlCard.add(lblTitle, "gapbottom 10");
 
-        JLabel lblUrl = new JLabel("Video URL:");
-        lblUrl.setForeground(Color.LIGHT_GRAY);
-        pnlInput.add(lblUrl);
-
+        pnlCard.add(new JLabel("URL:"));
         txtUrl = new JTextField();
-        txtUrl.putClientProperty("JTextField.placeholderText", "Paste YouTube link here...");
-        txtUrl.putClientProperty("FlatLaf.style", "arc: 10");
-        pnlInput.add(txtUrl, "growx");
+        txtUrl.putClientProperty("JTextField.placeholderText", "Paste link here");
+        pnlCard.add(txtUrl, "h 35!");
 
-        add(pnlInput, "growx, wrap");
+        pnlCard.add(new JLabel("Resolution:"), "gaptop 10");
+        cmbResolucion = new JComboBox<>(new String[]{"FullHD (1080p)", "HD (720p)", "SD (480p)", "Best"});
+        pnlCard.add(cmbResolucion, "h 30!");
 
-        JPanel pnlOptions = new JPanel(new MigLayout("insets 0, fillx", "[]20[]20[]", "[]"));
-        pnlOptions.setOpaque(false);
-
-        pnlOptions.add(new JLabel("Resolution:"));
-        cmbResolucion = new JComboBox<>(new String[]{"FullHD", "720p", "480p", "Best"});
-        pnlOptions.add(cmbResolucion, "w 100!");
-
-        chkOnlyAudio = new JCheckBox("Audio Only");
-        chkOnlyAudio.setOpaque(false);
+        chkOnlyAudio = new JCheckBox("Only Audio");
         chkOnlyAudio.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                toggleAudioOptions();
+                cmbAudioFormat.setEnabled(chkOnlyAudio.isSelected());
             }
         });
-        pnlOptions.add(chkOnlyAudio);
+        pnlCard.add(chkOnlyAudio);
 
-        // Audio Format
-        cmbAudioFormat = new JComboBox<>(new String[]{"mp3", "wav", "m4a", "best"});
+        cmbAudioFormat = new JComboBox<>(new String[]{"mp3", "m4a", "wav"});
         cmbAudioFormat.setEnabled(false);
-        pnlOptions.add(cmbAudioFormat, "w 80!");
+        pnlCard.add(cmbAudioFormat, "h 30!");
 
-        // Download Button
-        btnDownload = new JButton("START DOWNLOAD");
+        btnDownload = new JButton("DOWNLOAD");
         btnDownload.setBackground(Color.decode("#c6458f"));
         btnDownload.setForeground(Color.WHITE);
-        btnDownload.setFocusPainted(false);
-        btnDownload.setBorderPainted(false);
-        btnDownload.setContentAreaFilled(false);
-        btnDownload.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnDownload.setFont(new Font("Montserrat", Font.BOLD, 12));
+        btnDownload.putClientProperty("JButton.buttonType", "roundRect");
         btnDownload.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                startDownloadProcess();
+                String libraryFolder = main.getLibraryPath();
+                String dynamicOutputPath = libraryFolder + File.separator + "%(title)s.%(ext)s";
+                downloadVideo(dynamicOutputPath);
             }
         });
-        btnDownload.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent e) {
-                btnDownload.setContentAreaFilled(true);
-                btnDownload.setBackground(Color.decode("#c6458f"));
-            }
+        pnlCard.add(btnDownload, "h 45!, gaptop 15");
 
-            public void mouseExited(MouseEvent e) {
-                btnDownload.setContentAreaFilled(false);
-            }
-        });
-
-        add(pnlOptions, "growx, wrap");
-        add(btnDownload, "h 45!, growx, wrap");
-
-        // 4. Logs & Progress Area
         progressBar = new JProgressBar(0, 100);
         progressBar.setStringPainted(true);
-        progressBar.putClientProperty("FlatLaf.style", "arc: 10");
-        progressBar.setForeground(Color.decode("#7134bf"));
-        add(progressBar, "growx, h 20!, wrap");
+        pnlCard.add(progressBar, "h 20!, gaptop 10");
 
-    }
-
-    private void toggleAudioOptions() {
-        boolean isAudio = chkOnlyAudio.isSelected();
-        cmbAudioFormat.setEnabled(isAudio);
-        cmbResolucion.setEnabled(!isAudio);
-    }
-
-    private void startDownloadProcess() {
-        String url = txtUrl.getText().trim();
-        if (url.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please enter a valid URL", "Error", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        // Logic to get output path (Simulated from your Preferences)
-        // You should essentially get this from your Preferences class
-        String downloadPath = System.getProperty("user.home") + File.separator + "Downloads";
-
-        // If you have a Preferences object in Main, use: main.getPreferencesPanel().getLibraryPath();
-        String outputPath = downloadPath + File.separator + "%(title)s.%(ext)s";
-
-        btnDownload.setEnabled(false); // Disable button during download
-        downloadVideo(outputPath);
+        add(pnlCard, "grow");
     }
 
     private void downloadVideo(String outputPath) {
 
-        System.out.println("Starting download");
+        btnDownload.setEnabled(false);
         progressBar.setValue(0);
-        //txaLog.append("Initializing download for: " + txtUrl.getText() + "...\n");
+        //txaDebug.append("Trying to download " + txtUrl.getText() + "...\n\n");
+        //txaDebug.append(YTDLP_PATH);
+        SwingWorker<Void, String> worker;
+        worker = new SwingWorker<Void, String>() {
 
-        SwingWorker<Void, String> worker = new SwingWorker<Void, String>() {
             private boolean downloadSucceeded = false;
 
             @Override
             protected Void doInBackground() throws Exception {
                 try {
-                    // Logic to find yt-dlp (Using defaults or props)
+                    // Replace "yourExecutable.exe" and arguments as needed
+                    ProcessBuilder pb = new ProcessBuilder(YTDLP_PATH, txtUrl.getText(), "-o",
+                            outputPath
+                    );
                     String ytdlpExePath = props.getProperty("ytdlpPath", YTDLP_PATH);
+                    String url = txtUrl.getText().trim();
+                    //String selectedRes = (String) cmbResolucion.getSelectedItem();
 
                     List<String> cmd = new ArrayList<>();
+
                     cmd.add(ytdlpExePath);
-                    cmd.add(txtUrl.getText().trim());
-                    cmd.add("--user-agent");
-                    cmd.add("--no-cache-dir");
-                    cmd.add("--no-check-certificate");
+                    cmd.add(url);
                     cmd.add("-o");
                     cmd.add(outputPath);
                     cmd.add("--no-playlist");
+                    cmd.add("--newline");
 
                     if (chkOnlyAudio.isSelected()) {
                         String selectedAudioFormat = (String) cmbAudioFormat.getSelectedItem();
                         cmd.add("-x");
                         cmd.add("--audio-format");
-                        cmd.add("best".equalsIgnoreCase(selectedAudioFormat) ? "mp3" : selectedAudioFormat);
+                        if ("best".equalsIgnoreCase(selectedAudioFormat)) {
+                            cmd.add("mp3");
+                        } else {
+                            cmd.add(selectedAudioFormat);
+                        }
+
                     } else {
                         String selectedResolution = (String) cmbResolucion.getSelectedItem();
+                        String formatSelector = chooseResolution(selectedResolution);
                         cmd.add("-f");
-                        cmd.add(chooseResolution(selectedResolution));
+                        cmd.add(formatSelector);
                         cmd.add("--merge-output-format");
                         cmd.add("mp4");
                     }
-
-                    // Add other flags like --limit-rate here if needed
-                    ProcessBuilder pb = new ProcessBuilder(cmd);
+                    String speedLimit = props.getProperty("speedLimit", "");
+                    if (speedLimit != null && !speedLimit.trim().isEmpty()) {
+                        cmd.add("--limit-rate");
+                        cmd.add(speedLimit.trim());
+                    }
+                    String tempPath = props.getProperty("tempDirPath", "");
+                    if (tempPath != null && !tempPath.trim().isEmpty()) {
+                        cmd.add("--paths");
+                        cmd.add("temp:" + tempPath.trim());
+                    }
+                    boolean createM3u = Boolean.parseBoolean(props.getProperty("createM3u", "false"));
+                    if (createM3u) {
+                        cmd.add("--create-m3u");
+                    }
                     pb.redirectErrorStream(true);
                     Process process = pb.start();
 
+                    // Read output
                     BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                     String line;
                     while ((line = reader.readLine()) != null) {
+                        System.out.println("doInBackground> 1 line published. In thread " + Thread.currentThread().getName());
+                        System.out.println("\t" + line);
+
                         publish(line);
                     }
 
                     int exitCode = process.waitFor();
                     if (exitCode == 0) {
-                        downloadSucceeded = true;
                         publish("Download completed successfully!");
+
+                        downloadSucceeded = true;
+
                     } else {
                         publish("Download failed with exit code: " + exitCode);
+
                     }
-                } catch (Exception e) {
+                } catch (IOException | InterruptedException e) {
                     publish("Error: " + e.getMessage());
                 }
                 return null;
             }
 
             @Override
-            protected void process(List<String> chunks) {
+            protected void process(List<String> chunks
+            ) {
+                System.out.println("Process> " + chunks.size() + " lines recieved. In thread " + Thread.currentThread());
                 for (String line : chunks) {
-                    System.out.println(line);
-                    //txaLog.append(line + "\n");
-                    //txaLog.setCaretPosition(txaLog.getDocument().getLength()); // Auto-scroll
-
-                    // Progress Bar Parsing
+                    System.out.println("\t" + line);
+                    //txaDownloadResult.append(line + "\n");
                     Pattern pattern = Pattern.compile("\\[download\\]\\s+(\\d+\\.\\d+)%");
                     Matcher matcher = pattern.matcher(line);
+
                     if (matcher.find()) {
                         try {
                             double percentage = Double.parseDouble(matcher.group(1));
-                            progressBar.setValue((int) percentage);
-                        } catch (Exception e) {
+                            int valor = (int) percentage;
+
+                            if (valor >= 0 && valor <= 100) {
+                                progressBar.setValue(valor);
+                            }
+                        } catch (NumberFormatException e) {
+                            System.err.println("Error parsing progress percentage: " + e.getMessage());
                         }
                     }
                 }
@@ -244,25 +211,27 @@ public class DownloadPanel extends JPanel {
             protected void done() {
                 btnDownload.setEnabled(true);
                 try {
-                    get(); // Check for exceptions
+                    get();
+
                     if (downloadSucceeded) {
+                        progressBar.setValue(100);
                         JOptionPane.showMessageDialog(DownloadPanel.this, "Download Finished!");
-                        // Refresh Library
-                        // main.refreshLibrary(); // If you expose this method in Main
+
+                        if (main.getLibraryPanel() != null) {
+                            main.getLibraryPanel().loadMedia();
+                        }
                     }
                 } catch (Exception e) {
-                    System.out.println("\nCritical Error: " + e.getMessage());
+                    System.err.println("Error on worker completion: " + e.getMessage());
                 }
             }
+
         };
         worker.execute();
     }
 
     private String chooseResolution(String selected) {
-        if (selected == null) {
-            return "bestvideo+bestaudio/best";
-        }
-        if (selected.contains("FullHD")) {
+        if (selected.contains("1080")) {
             return "bv*[height<=1080]+ba/b[height<=1080]";
         }
         if (selected.contains("720")) {

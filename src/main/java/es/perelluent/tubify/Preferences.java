@@ -12,6 +12,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
@@ -20,7 +21,6 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import net.miginfocom.swing.MigLayout;
@@ -32,28 +32,46 @@ import net.miginfocom.swing.MigLayout;
 public class Preferences extends JPanel {
 
     private final MainWindow main;
-    
+
+    private JButton btnBack;
+    private JButton btnBrowseFolderPath;
+    private JButton btnBrowseTempDir;
+    private JButton btnBrowseYtdlpPath;
+    private ButtonGroup buttonGroup2;
+    private JCheckBox chkCreateM3u;
+    private JLabel lblPreferences;
+    private JRadioButton radLimitSpeed2M;
+    private JRadioButton radLimitSpeed500;
+    private JTextField txtDownloadPath;
+    private JTextField txtTempDir;
+    private JTextField txtYtdlpPath;
+
     public Preferences(MainWindow main) {
 
         this.main = main;
         setLayout(new MigLayout("fill, insets 0", "[center]", "[center]"));
         initComponents();
     }
-    
+
     private void initComponents() {
 
         JPanel pnlCard = new JPanel(new MigLayout("wrap, insets 50, gapy 15", "[grow, fill][]"));
         pnlCard.setOpaque(true);
-        pnlCard.setBackground(UIManager.getColor("EditorPane.background"));
         pnlCard.putClientProperty("FlatLaf.style", "arc: 25");
         pnlCard.setBorder(new CompoundBorder(
-            new FlatLineBorder(new Insets(0,0,0,0), Color.GRAY, 1, 25),
-            new EmptyBorder(5, 5, 5, 5)
+                new FlatLineBorder(new Insets(0, 0, 0, 0), Color.GRAY, 1, 25),
+                new EmptyBorder(5, 5, 5, 5)
         ));
 
         lblPreferences = new JLabel("Settings");
         lblPreferences.setFont(new Font("Montserrat", Font.BOLD, 22));
         lblPreferences.setHorizontalAlignment(SwingConstants.CENTER);
+
+        JLabel lblLogo = new JLabel();
+        java.net.URL imageUrl = getClass().getResource("/images/LogoIsotypeTrans.png");
+        if (imageUrl != null) {
+            lblLogo.setIcon(MainWindow.UpscaleIcon(new ImageIcon(imageUrl), 60, 60));
+        }
 
         txtDownloadPath = new JTextField();
         txtDownloadPath.putClientProperty("JTextField.placeholderText", "Library folder path...");
@@ -74,7 +92,7 @@ public class Preferences extends JPanel {
         radLimitSpeed2M = new JRadioButton("2M");
         radLimitSpeed500.setOpaque(false);
         radLimitSpeed2M.setOpaque(false);
-        
+
         buttonGroup2 = new ButtonGroup();
         buttonGroup2.add(radLimitSpeed500);
         buttonGroup2.add(radLimitSpeed2M);
@@ -89,7 +107,8 @@ public class Preferences extends JPanel {
         btnBack.setBackground(Color.decode("#c6458f")); // Color rosa del login
         btnBack.setForeground(Color.WHITE);
 
-        pnlCard.add(lblPreferences, "span 2, align center, gapbottom 15");
+        pnlCard.add(lblLogo, "align right, gapright 10");
+        pnlCard.add(lblPreferences, "align left, gapbottom 15, wrap");
 
         pnlCard.add(new JLabel("Download Folder"), "span 2, gapleft 5");
         pnlCard.add(txtDownloadPath, "h 38!");
@@ -116,6 +135,7 @@ public class Preferences extends JPanel {
         setupListeners();
     }
 
+    // método para agrupar Listeners.
     private void setupListeners() {
         btnBack.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -142,6 +162,7 @@ public class Preferences extends JPanel {
         });
     }
 
+    // métodos actionPerformed.
     private void btnBackActionPerformed(ActionEvent evt) {
         main.savePreferences();
         this.setVisible(false);
@@ -172,37 +193,56 @@ public class Preferences extends JPanel {
         }
     }
 
-    public String getYtdlpPath() { return txtYtdlpPath.getText(); }
-    public void setYtdlpPath(String path) { txtYtdlpPath.setText(path); }
-    public String getTempDirPath() { return txtTempDir.getText(); }
-    public void setTempDirPath(String path) { txtTempDir.setText(path); }
-    public String getLibraryPath() { return txtDownloadPath.getText(); }
-    public void setLibraryPath(String path) { txtDownloadPath.setText(path); }
-    public boolean isM3uCreationEnabled() { return chkCreateM3u.isSelected(); }
-    public void setM3uCreationEnabled(boolean enabled) { chkCreateM3u.setSelected(enabled); }
+    // getters y setters
+    public String getYtdlpPath() {
+        return txtYtdlpPath.getText();
+    }
+
+    public void setYtdlpPath(String path) {
+        txtYtdlpPath.setText(path);
+    }
+
+    public String getTempDirPath() {
+        return txtTempDir.getText();
+    }
+
+    public void setTempDirPath(String path) {
+        txtTempDir.setText(path);
+    }
+
+    public String getLibraryPath() {
+        return txtDownloadPath.getText();
+    }
+
+    public void setLibraryPath(String path) {
+        txtDownloadPath.setText(path);
+    }
+
+    public boolean isM3uCreationEnabled() {
+        return chkCreateM3u.isSelected();
+    }
+
+    public void setM3uCreationEnabled(boolean enabled) {
+        chkCreateM3u.setSelected(enabled);
+    }
 
     public String getSelectedSpeedLimit() {
-        if (radLimitSpeed500.isSelected()) return "500K";
-        if (radLimitSpeed2M.isSelected()) return "2M";
+        if (radLimitSpeed500.isSelected()) {
+            return "500K";
+        }
+        if (radLimitSpeed2M.isSelected()) {
+            return "2M";
+        }
         return "";
     }
 
     public void setSelectedSpeedLimit(String limit) {
-        if ("500K".equals(limit)) radLimitSpeed500.setSelected(true);
-        else if ("2M".equals(limit)) radLimitSpeed2M.setSelected(true);
-        else buttonGroup2.clearSelection();
+        if ("500K".equals(limit)) {
+            radLimitSpeed500.setSelected(true);
+        } else if ("2M".equals(limit)) {
+            radLimitSpeed2M.setSelected(true);
+        } else {
+            buttonGroup2.clearSelection();
+        }
     }
-
-    private JButton btnBack;
-    private JButton btnBrowseFolderPath;
-    private JButton btnBrowseTempDir;
-    private JButton btnBrowseYtdlpPath;
-    private ButtonGroup buttonGroup2;
-    private JCheckBox chkCreateM3u;
-    private JLabel lblPreferences;
-    private JRadioButton radLimitSpeed2M;
-    private JRadioButton radLimitSpeed500;
-    private JTextField txtDownloadPath;
-    private JTextField txtTempDir;
-    private JTextField txtYtdlpPath;
 }
