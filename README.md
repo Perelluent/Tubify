@@ -13,7 +13,7 @@ With this app, users can:
 
 ## Screenshots
 <img width="1920" height="1032" alt="image" src="https://github.com/user-attachments/assets/49ee96c7-31bc-4fbf-b1d8-a71a3ed3ce23" />
-<img width="1486" height="993" alt="image" src="https://github.com/user-attachments/assets/928f75a9-97c6-495c-a6d6-f1dde614bf1f" />
+<img width="1920" height="1032" alt="image" src="https://github.com/user-attachments/assets/ef23487c-2ab6-42ea-b308-6311f8cbc231" />
 <img width="1920" height="1032" alt="image" src="https://github.com/user-attachments/assets/ffe97294-a0fd-4759-b87a-7d40a666c739" />
 <img width="1920" height="1032" alt="image" src="https://github.com/user-attachments/assets/e73c7727-13bb-4c2a-b96f-e419a5b7fe60" />
 
