@@ -52,7 +52,7 @@ public class AboutPanel extends JPanel {
         ));
         //Logo
         JLabel lblLogo = new JLabel();
-        URL imageUrl = getClass().getResource("/images/TubifyLogoTransparent.png");
+        URL imageUrl = getClass().getResource("/images/logo.png");
         lblLogo = new JLabel();
         if (imageUrl != null) {
             ImageIcon icon = new ImageIcon(imageUrl);
@@ -87,7 +87,7 @@ public class AboutPanel extends JPanel {
         // Botón back
         JButton btnBack = new JButton("Back to App");
         btnBack.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnBack.putClientProperty("FlatLaf.style", "arc: 15; background: #c6458f; foreground: #ffffff");
+        btnBack.putClientProperty("FlatLaf.style", "arc: 15; background: #fb3f62; foreground: #ffffff");
         
         btnBack.addActionListener(new ActionListener() {
             @Override

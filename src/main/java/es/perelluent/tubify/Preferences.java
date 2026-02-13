@@ -68,7 +68,7 @@ public class Preferences extends JPanel {
         lblPreferences.setHorizontalAlignment(SwingConstants.CENTER);
 
         JLabel lblLogo = new JLabel();
-        java.net.URL imageUrl = getClass().getResource("/images/LogoIsotypeTrans.png");
+        java.net.URL imageUrl = getClass().getResource("/images/logo_isotype.png");
         if (imageUrl != null) {
             lblLogo.setIcon(MainWindow.UpscaleIcon(new ImageIcon(imageUrl), 60, 60));
         }
@@ -104,7 +104,7 @@ public class Preferences extends JPanel {
         btnBack = new JButton("SAVE & CLOSE");
         btnBack.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnBack.putClientProperty("JButton.buttonType", "roundRect");
-        btnBack.setBackground(Color.decode("#c6458f")); // Color rosa del login
+        btnBack.setBackground(Color.decode("#fb3f62")); // Color rosa del login
         btnBack.setForeground(Color.WHITE);
 
         pnlCard.add(lblLogo, "align right, gapright 10");
