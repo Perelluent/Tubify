@@ -12,10 +12,11 @@ With this app, users can:
 - 📂 Manage Library: View a unified table of Local vs Cloud files.
 
 ## Screenshots
-<img width="1920" height="1032" alt="image" src="https://github.com/user-attachments/assets/49ee96c7-31bc-4fbf-b1d8-a71a3ed3ce23" />
-<img width="1920" height="1032" alt="image" src="https://github.com/user-attachments/assets/ef23487c-2ab6-42ea-b308-6311f8cbc231" />
-<img width="1920" height="1032" alt="image" src="https://github.com/user-attachments/assets/ffe97294-a0fd-4759-b87a-7d40a666c739" />
-<img width="1920" height="1032" alt="image" src="https://github.com/user-attachments/assets/e73c7727-13bb-4c2a-b96f-e419a5b7fe60" />
+<img width="1920" height="1032" alt="image" src="https://github.com/user-attachments/assets/06d6a79a-2329-4eb9-b6f9-deed249a2744" />
+<img width="1920" height="1032" alt="image" src="https://github.com/user-attachments/assets/b1535dc4-ff0d-4627-85e4-764208d46955" />
+<img width="1920" height="1032" alt="image" src="https://github.com/user-attachments/assets/4a7d1520-6dcb-48c7-aab1-ec2b67d35394" />
+<img width="1920<img width="1920" height="1032" alt="image" src="https://github.com/user-attachments/assets/6647d4c0-9f53-418c-b33b-92e2a60a32f3" />
+
 
 
 
