@@ -28,6 +28,7 @@ public class DownloadPanel extends JPanel {
     private JComboBox<String> cmbAudioFormat;
     private JButton btnDownload;
     private JProgressBar progressBar;
+    private JLabel lblNotification;
 
     public DownloadPanel(MainWindow main) {
         this.main = main;
@@ -86,6 +87,10 @@ public class DownloadPanel extends JPanel {
         progressBar = new JProgressBar(0, 100);
         progressBar.setStringPainted(true);
         pnlCard.add(progressBar, "h 20!, gaptop 10");
+        lblNotification = new JLabel("");
+        lblNotification.setFont(new Font("Montserrat", Font.PLAIN, 12));
+        lblNotification.setHorizontalAlignment(SwingConstants.CENTER);
+        pnlCard.add(lblNotification, "h 20!, gaptop 5");
 
         add(pnlCard, "grow");
     }
@@ -215,7 +220,7 @@ public class DownloadPanel extends JPanel {
 
                     if (downloadSucceeded) {
                         progressBar.setValue(100);
-                        JOptionPane.showMessageDialog(DownloadPanel.this, "Download Finished!");
+                        lblNotification.setText("Download Finished!");
 
                         if (main.getLibraryPanel() != null) {
                             main.getLibraryPanel().loadMedia();

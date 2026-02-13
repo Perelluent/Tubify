@@ -1,5 +1,7 @@
 es\perelluent\tubify\LibraryPanel$8.class
 es\perelluent\tubify\LoginPanel.class
+es\perelluent\tubify\dto\LibraryIconRenderer.class
+es\perelluent\tubify\LibraryPanel$10.class
 es\perelluent\tubify\DownloadPanel$1.class
 es\perelluent\tubify\LibraryPanel$3.class
 es\perelluent\tubify\LibraryPanel.class
@@ -16,6 +18,7 @@ es\perelluent\tubify\DownloadPanel$3.class
 es\perelluent\tubify\LibraryPanel$1.class
 es\perelluent\tubify\LibraryPanel$7.class
 es\perelluent\tubify\LibraryPanel$2.class
+es\perelluent\tubify\LibraryPanel$9.class
 es\perelluent\tubify\dto\DownloadedFile.class
 es\perelluent\tubify\dto\LibraryTableModel.class
 es\perelluent\tubify\LoginPanel$1.class

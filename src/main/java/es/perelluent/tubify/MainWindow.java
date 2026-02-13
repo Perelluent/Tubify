@@ -22,6 +22,7 @@ import java.util.Properties;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -60,6 +61,7 @@ public class MainWindow extends JFrame implements MediaPollingBeanListener {
 
         this.getContentPane().setLayout(new BorderLayout());
         this.setMinimumSize(new Dimension(1100, 700));
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         loginPanel = new LoginPanel(mediaPollingBean, this);
         preferences = new Preferences(this);
@@ -98,6 +100,12 @@ public class MainWindow extends JFrame implements MediaPollingBeanListener {
         mniAbout.addActionListener(e -> showAbout());
         mnuHelp.add(mniAbout);
 
+        JLabel lblLogo = new JLabel();
+        java.net.URL imageUrl = getClass().getResource("/images/LogoIsotypeTrans.png");
+        if (imageUrl != null) {
+            lblLogo.setIcon(MainWindow.UpscaleIcon(new ImageIcon(imageUrl), 20, 20));
+        }
+        menuBar.add(lblLogo);
         menuBar.add(mnuFile);
         menuBar.add(mnuEdit);
         menuBar.add(mnuHelp);

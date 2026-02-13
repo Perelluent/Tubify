@@ -15,7 +15,7 @@ import javax.swing.table.AbstractTableModel;
  */
 public class LibraryTableModel extends AbstractTableModel {
 
-    private final String[] columnNames = {"File Name", "Type", "Origin"};
+    private final String[] columnNames = {"Type", "Origin", "File Name"};
     private List<LibraryItem> items;
 
     public LibraryTableModel() {
@@ -49,9 +49,9 @@ public class LibraryTableModel extends AbstractTableModel {
         LibraryItem item = items.get(rowIndex);
         
         switch (columnIndex) {
-            case 0: return item.getMediaName();
-            case 1: return item.getMediaMimeType();
-            case 2: return item.getStatus();
+            case 0: return item.getMediaMimeType();
+            case 1: return item.getStatus();
+            case 2: return item.getMediaName();
 //            case 3: return item.getSize();
 //            case 4: return item.getMediaDownloadedUrl();
             default: return null;

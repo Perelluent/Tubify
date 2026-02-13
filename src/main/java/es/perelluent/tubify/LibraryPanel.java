@@ -6,6 +6,7 @@ package es.perelluent.tubify;
 
 import es.perelluent.mediapollingbean.dto.Media;
 import es.perelluent.tubify.dto.DownloadedFile;
+import es.perelluent.tubify.dto.LibraryIconRenderer;
 import es.perelluent.tubify.dto.LibraryItem;
 import es.perelluent.tubify.dto.LibraryTableModel;
 import java.awt.*;
@@ -55,9 +56,14 @@ public class LibraryPanel extends JPanel {
         lblTitle.setFont(new Font("Montserrat", Font.BOLD, 22));
 
         JLabel lblLogo = new JLabel();
-        java.net.URL imageUrl = getClass().getResource("/images/LogoIsotypeTrans.png");
+        java.net.URL imageUrl = getClass().getResource("/images/TubifyLogoTransparent.png");
         if (imageUrl != null) {
-            lblLogo.setIcon(MainWindow.UpscaleIcon(new ImageIcon(imageUrl), 60, 60));
+            lblLogo.setIcon(MainWindow.UpscaleIcon(new ImageIcon(imageUrl), 180, 80));
+        }
+        ImageIcon logoutImg = null;
+        java.net.URL logoutUrl = getClass().getResource("/images/logout.png");
+        if (logoutUrl != null) {
+            logoutImg = MainWindow.UpscaleIcon(new ImageIcon(logoutUrl), 50, 50);
         }
 
         txtSearch = new JTextField();
@@ -70,7 +76,6 @@ public class LibraryPanel extends JPanel {
         });
 
         btnPrefences = createStyledButton("PREFERENCES", null);
-        btnPrefences.setForeground(Color.WHITE);
 
         pnlHeader.add(lblLogo);
         pnlHeader.add(lblTitle, "gapleft 5");
@@ -79,9 +84,17 @@ public class LibraryPanel extends JPanel {
 
         libraryModel = new LibraryTableModel();
         tblLibrary = new JTable(libraryModel);
-        tblLibrary.getColumnModel().getColumn(0).setPreferredWidth(800);
-        tblLibrary.getColumnModel().getColumn(1).setPreferredWidth(50);
-        tblLibrary.getColumnModel().getColumn(2).setPreferredWidth(50);
+        LibraryIconRenderer iconRenderer = new LibraryIconRenderer();
+        tblLibrary.getColumnModel().getColumn(0).setCellRenderer(iconRenderer);
+        tblLibrary.getColumnModel().getColumn(1).setCellRenderer(iconRenderer);
+
+        tblLibrary.getColumnModel().getColumn(0).setPreferredWidth(60);
+        tblLibrary.getColumnModel().getColumn(0).setMaxWidth(60);
+
+        tblLibrary.getColumnModel().getColumn(1).setPreferredWidth(60);
+        tblLibrary.getColumnModel().getColumn(1).setMaxWidth(60);
+
+        tblLibrary.getColumnModel().getColumn(2).setPreferredWidth(800);
         tblLibrary.setRowHeight(40);
         tblLibrary.setShowVerticalLines(false);
         tblLibrary.getTableHeader().setReorderingAllowed(false);
@@ -94,19 +107,54 @@ public class LibraryPanel extends JPanel {
         JPanel pnlActions = new JPanel(new MigLayout("fillx, insets 10 0 0 0", "[]10[]push[]"));
         pnlActions.setOpaque(false);
 
-        btnDelete = createStyledButton("DELETE FILE", null);
+        ImageIcon deleteIcon = null;
+        java.net.URL deleteIconUrl = getClass().getResource("/images/rubbish.png");
+        if (deleteIconUrl != null) {
+            deleteIcon = MainWindow.UpscaleIcon(new ImageIcon(deleteIconUrl), 50, 50);
+        }
+
+        btnDelete = new JButton(deleteIcon);
+        btnDelete.setToolTipText("Delete File");
+        btnDelete.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnDelete.putClientProperty("JButton.buttonType", "toolBarButton");
+        btnDelete.setContentAreaFilled(false);
         btnUpload = createStyledButton("UPLOAD TO CLOUD", null);
+        ImageIcon playIcon = null;
+        java.net.URL playIconUrl = getClass().getResource("/images/play.png");
+        if (playIconUrl != null) {
+            playIcon = MainWindow.UpscaleIcon(new ImageIcon(playIconUrl), 60, 60);
+        }
         btnPlay = createStyledButton("PLAY MEDIA", Color.decode("#c6458f"));
         btnPlay.setForeground(Color.WHITE);
 
-        btnLogout = createStyledButton("LOGOUT", Color.DARK_GRAY);
-        btnLogout.setForeground(Color.WHITE);
+        btnLogout = new JButton(logoutImg);
+        btnLogout.setToolTipText("Logout");
+        btnLogout.setCursor(new Cursor(Cursor.HAND_CURSOR) {
+        });
+        btnLogout.setContentAreaFilled(false);
 
         // Listeners de botones
         btnPlay.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 btnPlayActionPerformed(e);
+            }
+        });
+        final ImageIcon iconToShow = playIcon;
+        btnPlay.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                btnPlay.setContentAreaFilled(false);
+                btnPlay.setText("");
+                btnPlay.setToolTipText("play");
+                btnPlay.setIcon(iconToShow);
+            }
+
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                btnPlay.setContentAreaFilled(true);
+                btnPlay.setIcon(null);
+                btnPlay.setText("PLAY MEDIA");
             }
         });
         btnUpload.addActionListener(new ActionListener() {
@@ -215,6 +263,7 @@ public class LibraryPanel extends JPanel {
             playCloudMedia(selectedMedia.getCloudMedia());
         }
     }
+
     private void btnLogoutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLogoutActionPerformed
 
         int response = JOptionPane.showConfirmDialog(
@@ -339,25 +388,42 @@ public class LibraryPanel extends JPanel {
     }
 
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {
-//        int viewRow = tblLibrary.getSelectedRow();
-//        if (viewRow == -1) {
-//            JOptionPane.showMessageDialog(this, "Select a file to delete.");
-//            return;
-//        }
-//
-//        int modelRow = tblLibrary.convertRowIndexToModel(viewRow);
-//        LibraryItem fileToDelete = libraryModel.getMediaAt(modelRow);
-//
-//        int choice = JOptionPane.showConfirmDialog(this,
-//                "Remove '" + fileToDelete.mediaFileName + "' from list?\n(Note: API delete not supported yet)",
-//                "Confirm", JOptionPane.YES_NO_OPTION);
-//
-//        if (choice == JOptionPane.YES_OPTION) {
-//            // Nota: El ApiClient proporcionado NO tiene método delete. 
-//            // Solo lo quitamos de la vista visual.
-//            libraryModel.removeMedia(modelRow);
-//        }
+        int selectedRow = tblLibrary.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(LibraryPanel.this, "Please. First select a File to delete.");
+            return;
+        }
+        
+        int modelRow = tblLibrary.convertRowIndexToModel(selectedRow);
+        LibraryItem item = libraryModel.getItemAt(modelRow);
+
+        if (item != null && item.getLocalFile() != null) {
+            int confirm = JOptionPane.showConfirmDialog(
+                LibraryPanel.this,
+                "Are you sure you want to delete '" + item.getMediaName() + "' from your computer?",
+                "Confirm Delete",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+            );
+
+            if (confirm == JOptionPane.YES_OPTION) {
+                boolean deleted = item.getLocalFile().deleteFromDisk();
+
+                if (deleted) {
+                    JOptionPane.showMessageDialog(LibraryPanel.this, "File deleted from disk.");
+                    loadMedia(); 
+                } else {
+                    JOptionPane.showMessageDialog(LibraryPanel.this, 
+                        "The file could not be deleted. It might be in use by another program.", 
+                        "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        } else {
+            JOptionPane.showMessageDialog(LibraryPanel.this, 
+                "This file is only in the Cloud. Local deletion is not possible.");
+        }
     }
+
     // cargar la tabla
     public void loadMedia() {
         Thread thread = new Thread(() -> {
