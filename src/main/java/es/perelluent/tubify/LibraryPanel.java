@@ -56,14 +56,14 @@ public class LibraryPanel extends JPanel {
         lblTitle.setFont(new Font("Montserrat", Font.BOLD, 22));
 
         JLabel lblLogo = new JLabel();
-        java.net.URL imageUrl = getClass().getResource("/images/TubifyLogoTransparent.png");
+        java.net.URL imageUrl = getClass().getResource("/images/logo.png");
         if (imageUrl != null) {
-            lblLogo.setIcon(MainWindow.UpscaleIcon(new ImageIcon(imageUrl), 180, 80));
+            lblLogo.setIcon(MainWindow.UpscaleIcon(new ImageIcon(imageUrl), 200, 80));
         }
         ImageIcon logoutImg = null;
         java.net.URL logoutUrl = getClass().getResource("/images/logout.png");
         if (logoutUrl != null) {
-            logoutImg = MainWindow.UpscaleIcon(new ImageIcon(logoutUrl), 50, 50);
+            logoutImg = MainWindow.UpscaleIcon(new ImageIcon(logoutUrl), 80, 80);
         }
 
         txtSearch = new JTextField();
@@ -110,7 +110,7 @@ public class LibraryPanel extends JPanel {
         ImageIcon deleteIcon = null;
         java.net.URL deleteIconUrl = getClass().getResource("/images/rubbish.png");
         if (deleteIconUrl != null) {
-            deleteIcon = MainWindow.UpscaleIcon(new ImageIcon(deleteIconUrl), 50, 50);
+            deleteIcon = MainWindow.UpscaleIcon(new ImageIcon(deleteIconUrl), 80, 80);
         }
 
         btnDelete = new JButton(deleteIcon);
@@ -124,7 +124,7 @@ public class LibraryPanel extends JPanel {
         if (playIconUrl != null) {
             playIcon = MainWindow.UpscaleIcon(new ImageIcon(playIconUrl), 60, 60);
         }
-        btnPlay = createStyledButton("PLAY MEDIA", Color.decode("#c6458f"));
+        btnPlay = createStyledButton("PLAY MEDIA", Color.decode("#fb3f62"));
         btnPlay.setForeground(Color.WHITE);
 
         btnLogout = new JButton(logoutImg);

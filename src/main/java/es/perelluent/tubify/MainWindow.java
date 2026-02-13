@@ -101,7 +101,7 @@ public class MainWindow extends JFrame implements MediaPollingBeanListener {
         mnuHelp.add(mniAbout);
 
         JLabel lblLogo = new JLabel();
-        java.net.URL imageUrl = getClass().getResource("/images/LogoIsotypeTrans.png");
+        java.net.URL imageUrl = getClass().getResource("/images/logo_isotype.png");
         if (imageUrl != null) {
             lblLogo.setIcon(MainWindow.UpscaleIcon(new ImageIcon(imageUrl), 20, 20));
         }

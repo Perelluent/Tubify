@@ -39,7 +39,7 @@ public class LoginPanel extends JPanel {
     private final String prefToken = "user_token";
     private final String prefRememberMe = "remember_me_check";
 
-    private final URL imageUrl = getClass().getResource("/images/TubifyLogoTransparent.png");
+    private final URL imageUrl = getClass().getResource("/images/logo.png");
 
     public LoginPanel(MediaPollingBean mediaPollingBean, MainWindow mainWindow) {
 
@@ -84,7 +84,7 @@ public class LoginPanel extends JPanel {
         btnLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnLogin.putClientProperty("JButton.buttonType", "roundRect");
         // Color corporativo con el logo
-        btnLogin.setBackground(Color.decode("#c6458f"));
+        btnLogin.setBackground(Color.decode("#fb3f62"));
         btnLogin.setForeground(Color.WHITE);
 
         btnLogin.addActionListener(new ActionListener() {

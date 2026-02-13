@@ -70,7 +70,7 @@ public class DownloadPanel extends JPanel {
         pnlCard.add(cmbAudioFormat, "h 30!");
 
         btnDownload = new JButton("DOWNLOAD");
-        btnDownload.setBackground(Color.decode("#c6458f"));
+        btnDownload.setBackground(Color.decode("#fb3f62"));
         btnDownload.setForeground(Color.WHITE);
         btnDownload.setFont(new Font("Montserrat", Font.BOLD, 12));
         btnDownload.putClientProperty("JButton.buttonType", "roundRect");
