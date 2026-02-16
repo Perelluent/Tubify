@@ -5,6 +5,7 @@
 package es.perelluent.tubify.dto;
 
 import es.perelluent.tubify.MainWindow;
+import java.awt.Color;
 import java.awt.Component;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -49,7 +50,7 @@ public class LibraryIconRenderer extends DefaultTableCellRenderer {
 
         super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         setText("");
-
+ 
         String val = (value != null) ? value.toString() : "";
 
         if (column == 0) {

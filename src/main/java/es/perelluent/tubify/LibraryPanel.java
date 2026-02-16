@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -75,15 +76,10 @@ public class LibraryPanel extends JPanel {
             }
         });
 
-        btnPrefences = createStyledButton("PREFERENCES", null);
-
-        pnlHeader.add(lblLogo);
-        pnlHeader.add(lblTitle, "gapleft 5");
-        pnlHeader.add(txtSearch, "width 250!");
-        pnlHeader.add(btnPrefences);
-
         libraryModel = new LibraryTableModel();
         tblLibrary = new JTable(libraryModel);
+        tblLibrary.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tblLibrary.putClientProperty("Table.selectionBackground", Color.decode("#f39bab"));
         LibraryIconRenderer iconRenderer = new LibraryIconRenderer();
         tblLibrary.getColumnModel().getColumn(0).setCellRenderer(iconRenderer);
         tblLibrary.getColumnModel().getColumn(1).setCellRenderer(iconRenderer);
@@ -108,17 +104,29 @@ public class LibraryPanel extends JPanel {
         pnlActions.setOpaque(false);
 
         ImageIcon deleteIcon = null;
-        java.net.URL deleteIconUrl = getClass().getResource("/images/rubbish.png");
+        URL deleteIconUrl = getClass().getResource("/images/rubbish.png");
         if (deleteIconUrl != null) {
             deleteIcon = MainWindow.UpscaleIcon(new ImageIcon(deleteIconUrl), 80, 80);
         }
-
         btnDelete = new JButton(deleteIcon);
         btnDelete.setToolTipText("Delete File");
         btnDelete.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnDelete.putClientProperty("JButton.buttonType", "toolBarButton");
         btnDelete.setContentAreaFilled(false);
-        btnUpload = createStyledButton("UPLOAD TO CLOUD", null);
+        btnDelete = createStyledButton("DELETE", null);
+
+        ImageIcon uploadIcon = null;
+        URL uploadIconUrl = getClass().getResource("/images/upload.png");
+        if (uploadIconUrl != null) {
+            uploadIcon = MainWindow.UpscaleIcon(new ImageIcon(uploadIconUrl), 80, 80);
+        }
+        btnUpload = new JButton(uploadIcon);
+        btnUpload.setToolTipText("Upload File");
+        btnUpload.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnUpload.putClientProperty("JButton.buttonType", "toolBarButton");
+        btnUpload.setContentAreaFilled(false);
+        btnUpload = createStyledButton("UPLOAD", null);
+
         ImageIcon playIcon = null;
         java.net.URL playIconUrl = getClass().getResource("/images/play.png");
         if (playIconUrl != null) {
@@ -140,14 +148,14 @@ public class LibraryPanel extends JPanel {
                 btnPlayActionPerformed(e);
             }
         });
-        final ImageIcon iconToShow = playIcon;
+        final ImageIcon iconPlay = playIcon;
         btnPlay.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 btnPlay.setContentAreaFilled(false);
                 btnPlay.setText("");
                 btnPlay.setToolTipText("play");
-                btnPlay.setIcon(iconToShow);
+                btnPlay.setIcon(iconPlay);
             }
 
             @Override
@@ -163,12 +171,76 @@ public class LibraryPanel extends JPanel {
                 btnUploadActionPerformed(e);
             }
         });
+        final ImageIcon iconUpload = uploadIcon;
+        btnUpload.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                btnUpload.setContentAreaFilled(false);
+                btnUpload.setText("");
+                btnUpload.setToolTipText("Upload");
+                btnUpload.setIcon(iconUpload);
+            }
+
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                btnUpload.setContentAreaFilled(true);
+                btnUpload.setIcon(null);
+                btnUpload.setText("UPLOAD");
+            }
+        });
         btnDelete.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 btnDeleteActionPerformed(e);
             }
         });
+        final ImageIcon iconDelete = deleteIcon;
+        btnDelete.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                btnDelete.setContentAreaFilled(false);
+                btnDelete.setText("");
+                btnDelete.setToolTipText("Delete");
+                btnDelete.setIcon(iconDelete);
+            }
+
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                btnDelete.setContentAreaFilled(true);
+                btnDelete.setIcon(null);
+                btnDelete.setText("DELETE");
+            }
+        });
+        ImageIcon preferencesIcon = null;
+        URL preferencesIconUrl = getClass().getResource("/images/preferences.png");
+        if (preferencesIconUrl != null) {
+            preferencesIcon = MainWindow.UpscaleIcon(new ImageIcon(preferencesIconUrl), 100, 100);
+        }
+
+        btnPrefences = new JButton(preferencesIcon);
+        btnPrefences.setToolTipText("Preferences");
+        btnPrefences.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnPrefences.putClientProperty("JButton.buttonType", "toolBarButton");
+        btnPrefences.setContentAreaFilled(false);
+        btnPrefences = createStyledButton("PREFERENCES", null);
+        final ImageIcon iconPreferences = preferencesIcon;
+        btnPrefences.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                btnPrefences.setContentAreaFilled(false);
+                btnPrefences.setText("");
+                btnPrefences.setToolTipText("Preferences");
+                btnPrefences.setIcon(iconPreferences);
+            }
+
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                btnPrefences.setContentAreaFilled(true);
+                btnPrefences.setIcon(null);
+                btnPrefences.setText("PREFERENCES");
+            }
+        });
+
         btnLogout.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -184,11 +256,16 @@ public class LibraryPanel extends JPanel {
 
         });
 
-        pnlActions.add(btnDelete, "h 40!");
-        pnlActions.add(btnUpload, "h 40!");
-        pnlActions.add(btnPlay, "h 50!, w 220!, center");
-        pnlActions.add(btnPrefences, "h 40!, center");
-        pnlActions.add(btnLogout, "h 40!, right");
+        pnlHeader.add(lblLogo);
+        pnlHeader.add(lblTitle, "gapleft 5");
+        pnlHeader.add(txtSearch, "width 250!");
+        pnlHeader.add(btnPrefences);
+
+        pnlActions.add(btnDelete, "w 110!, h 40!");
+        pnlActions.add(btnUpload, "w 110!, h 40!");
+        pnlActions.add(btnPlay, "w 220!, h 50!, center");
+        pnlActions.add(btnPrefences, "w 130!, h 40!, right");
+        pnlActions.add(btnLogout, "w 40!, h 40!, right");
 
         // Añadimos al panel principal
         add(pnlHeader, "wrap, gapbottom 10");
@@ -393,17 +470,17 @@ public class LibraryPanel extends JPanel {
             JOptionPane.showMessageDialog(LibraryPanel.this, "Please. First select a File to delete.");
             return;
         }
-        
+
         int modelRow = tblLibrary.convertRowIndexToModel(selectedRow);
         LibraryItem item = libraryModel.getItemAt(modelRow);
 
         if (item != null && item.getLocalFile() != null) {
             int confirm = JOptionPane.showConfirmDialog(
-                LibraryPanel.this,
-                "Are you sure you want to delete '" + item.getMediaName() + "' from your computer?",
-                "Confirm Delete",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.WARNING_MESSAGE
+                    LibraryPanel.this,
+                    "Are you sure you want to delete '" + item.getMediaName() + "' from your computer?",
+                    "Confirm Delete",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE
             );
 
             if (confirm == JOptionPane.YES_OPTION) {
@@ -411,23 +488,25 @@ public class LibraryPanel extends JPanel {
 
                 if (deleted) {
                     JOptionPane.showMessageDialog(LibraryPanel.this, "File deleted from disk.");
-                    loadMedia(); 
+                    loadMedia();
                 } else {
-                    JOptionPane.showMessageDialog(LibraryPanel.this, 
-                        "The file could not be deleted. It might be in use by another program.", 
-                        "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(LibraryPanel.this,
+                            "The file could not be deleted. It might be in use by another program.",
+                            "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         } else {
-            JOptionPane.showMessageDialog(LibraryPanel.this, 
-                "This file is only in the Cloud. Local deletion is not possible.");
+            JOptionPane.showMessageDialog(LibraryPanel.this,
+                    "This file is only in the Cloud. Local deletion is not possible.");
         }
     }
 
     // cargar la tabla
-    public void loadMedia() {
+    public void loadMedia(String fileToSelect) {
+        // Definimos el hilo para la carga de datos (Nube + Local)
         Thread thread = new Thread(() -> {
             try {
+                // 1. Cargar lista de la nube
                 List<Media> cloudList = null;
                 if (main.getMediaPollingBean().getToken() != null) {
                     try {
@@ -437,6 +516,7 @@ public class LibraryPanel extends JPanel {
                     }
                 }
 
+                // 2. Cargar lista local desde las preferencias
                 List<DownloadedFile> localList = new ArrayList<>();
                 String userHome = System.getProperty("user.home");
                 String propsPath = userHome + File.separator + "TubifySettings.properties";
@@ -465,14 +545,74 @@ public class LibraryPanel extends JPanel {
                     }
                 }
 
+                // 3. Mezclar listas
                 final List<LibraryItem> mergedList = mergeLists(cloudList, localList);
-                SwingUtilities.invokeLater(() -> libraryModel.setItems(mergedList));
+
+                // 4. Actualizar la interfaz de usuario (UI)
+                SwingUtilities.invokeLater(() -> {
+                    // Actualizamos los datos del modelo
+                    libraryModel.setItems(mergedList);
+
+                    // Si hay un archivo específico para seleccionar
+                    if (fileToSelect != null && !fileToSelect.isEmpty()) {
+                        String searchName = fileToSelect.contains(".")
+                                ? fileToSelect.substring(0, fileToSelect.lastIndexOf("."))
+                                : fileToSelect;
+
+                        // Timer de 100ms para asegurar que JTable ha renderizado las nuevas filas
+                        javax.swing.Timer selectionTimer = new javax.swing.Timer(200, e -> {
+                            String cleanTarget = fileToSelect.replaceAll("\\.f\\d+\\.[a-z0-9]+$", "") // Quita temporal yt-dlp
+                                    .replaceAll("\\.[^.]+$", "") // Quita extensión
+                                    .replaceAll("[^a-zA-Z0-9]", "") // Quita TODO lo que no sea letra/número
+                                    .toLowerCase();
+
+                            System.out.println("Buscando coincidencia simplificada para: " + cleanTarget);
+
+                            for (int i = 0; i < tblLibrary.getRowCount(); i++) {
+                                Object value = tblLibrary.getValueAt(i, 2);
+                                if (value != null) {
+                                    // 2. LIMPIEZA AGRESIVA de la fila de la tabla para comparar en igualdad de condiciones
+                                    String nameInTable = value.toString().replaceAll("\\.[^.]+$", "") // Quita extensión
+                                            .replaceAll("[^a-zA-Z0-9]", "") // Quita símbolos
+                                            .toLowerCase();
+
+                                    // 3. Comparación por proximidad
+                                    if (!cleanTarget.isEmpty() && (nameInTable.contains(cleanTarget) || cleanTarget.contains(nameInTable))) {
+                                        final int row = i;
+                                        // Ejecutamos la selección en el hilo de UI
+                                        tblLibrary.setRowSelectionInterval(row, row);
+
+                                        // Asegurar scroll
+                                        Rectangle rect = tblLibrary.getCellRect(row, 0, true);
+                                        tblLibrary.scrollRectToVisible(rect);
+
+                                        // Importante: Foco para resaltar
+                                        tblLibrary.requestFocusInWindow();
+
+                                        System.out.println("¡LOGRADO! Coincidencia encontrada en fila: " + row);
+                                        return;
+                                    }
+                                }
+                            }
+                        });
+                        selectionTimer.setRepeats(false);
+                        selectionTimer.start();
+                    }
+                });
 
             } catch (Exception e) {
-                e.printStackTrace();
+                System.err.println("Error en la carga de medios: " + e.getMessage());
             }
         });
         thread.start();
+    }
+
+    /**
+     * Versión sobrecargada para recargar la lista sin seleccionar nada
+     * específico.
+     */
+    public void loadMedia() {
+        loadMedia(null);
     }
 
     // Combinar archivos en la nube y local

@@ -34,7 +34,7 @@ public class DownloadPanel extends JPanel {
         this.main = main;
 
         setLayout(new MigLayout("fill, insets 10", "[grow]", "[]")); //Layout principal
-        
+
         initComponents();
     }
 
@@ -77,6 +77,19 @@ public class DownloadPanel extends JPanel {
         btnDownload.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                String url = txtUrl.getText().trim();
+                if (url.isEmpty()) {
+                    lblNotification.setText("Please, insert a URL to download.");
+                    lblNotification.setForeground(Color.decode("#fb3f62"));
+                    txtUrl.putClientProperty("JComponent.outline", "error");
+                    return;
+                }
+                if (!url.startsWith("https://")) {
+                    lblNotification.setText("Invalid URL. Please, enter a valid URL.");
+                    lblNotification.setForeground(Color.decode("#fb3f62"));
+                    txtUrl.putClientProperty("JComponent.outline", "error");
+                    return;
+                }
                 String libraryFolder = main.getLibraryPath();
                 String dynamicOutputPath = libraryFolder + File.separator + "%(title)s.%(ext)s";
                 downloadVideo(dynamicOutputPath);
@@ -105,6 +118,7 @@ public class DownloadPanel extends JPanel {
         worker = new SwingWorker<Void, String>() {
 
             private boolean downloadSucceeded = false;
+            private String finalFileName = "";
 
             @Override
             protected Void doInBackground() throws Exception {
@@ -165,9 +179,13 @@ public class DownloadPanel extends JPanel {
                     BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        System.out.println("doInBackground> 1 line published. In thread " + Thread.currentThread().getName());
-                        System.out.println("\t" + line);
-
+                        if (line.contains("[download] Destination:")) {
+                            String fullPath = line.split("Destination:")[1].trim();
+                            finalFileName = new File(fullPath).getName();
+                        } else if (line.contains("has already been downloaded")) {
+                            finalFileName = line.replace("[download] ", "").split(" has already")[0].trim();
+                            finalFileName = new File(finalFileName).getName();
+                        }
                         publish(line);
                     }
 
@@ -176,7 +194,7 @@ public class DownloadPanel extends JPanel {
                         publish("Download completed successfully!");
 
                         downloadSucceeded = true;
-
+                        System.out.println("DEBUG: finalFileName capturado es -> " + finalFileName);
                     } else {
                         publish("Download failed with exit code: " + exitCode);
 
@@ -221,9 +239,10 @@ public class DownloadPanel extends JPanel {
                     if (downloadSucceeded) {
                         progressBar.setValue(100);
                         lblNotification.setText("Download Finished!");
-
+                        lblNotification.setForeground(Color.decode("#fb3f62"));
                         if (main.getLibraryPanel() != null) {
-                            main.getLibraryPanel().loadMedia();
+                            System.out.println("Mandando a seleccionar: " + finalFileName);
+                            main.getLibraryPanel().loadMedia(finalFileName);
                         }
                     }
                 } catch (Exception e) {
