@@ -545,12 +545,11 @@ public class LibraryPanel extends JPanel {
                     }
                 }
 
-                // 3. Mezclar listas
+                // Mezclar listas
                 final List<LibraryItem> mergedList = mergeLists(cloudList, localList);
 
-                // 4. Actualizar la interfaz de usuario (UI)
+                // Actualizar la lista
                 SwingUtilities.invokeLater(() -> {
-                    // Actualizamos los datos del modelo
                     libraryModel.setItems(mergedList);
 
                     // Si hay un archivo específico para seleccionar
@@ -566,30 +565,21 @@ public class LibraryPanel extends JPanel {
                                     .replaceAll("[^a-zA-Z0-9]", "") // Quita TODO lo que no sea letra/número
                                     .toLowerCase();
 
-                            System.out.println("Buscando coincidencia simplificada para: " + cleanTarget);
-
                             for (int i = 0; i < tblLibrary.getRowCount(); i++) {
                                 Object value = tblLibrary.getValueAt(i, 2);
                                 if (value != null) {
-                                    // 2. LIMPIEZA AGRESIVA de la fila de la tabla para comparar en igualdad de condiciones
                                     String nameInTable = value.toString().replaceAll("\\.[^.]+$", "") // Quita extensión
                                             .replaceAll("[^a-zA-Z0-9]", "") // Quita símbolos
                                             .toLowerCase();
 
-                                    // 3. Comparación por proximidad
+                                    // Comparación por proximidad
                                     if (!cleanTarget.isEmpty() && (nameInTable.contains(cleanTarget) || cleanTarget.contains(nameInTable))) {
                                         final int row = i;
-                                        // Ejecutamos la selección en el hilo de UI
                                         tblLibrary.setRowSelectionInterval(row, row);
-
-                                        // Asegurar scroll
                                         Rectangle rect = tblLibrary.getCellRect(row, 0, true);
                                         tblLibrary.scrollRectToVisible(rect);
-
-                                        // Importante: Foco para resaltar
                                         tblLibrary.requestFocusInWindow();
 
-                                        System.out.println("¡LOGRADO! Coincidencia encontrada en fila: " + row);
                                         return;
                                     }
                                 }

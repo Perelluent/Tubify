@@ -194,7 +194,6 @@ public class DownloadPanel extends JPanel {
                         publish("Download completed successfully!");
 
                         downloadSucceeded = true;
-                        System.out.println("DEBUG: finalFileName capturado es -> " + finalFileName);
                     } else {
                         publish("Download failed with exit code: " + exitCode);
 
@@ -241,7 +240,6 @@ public class DownloadPanel extends JPanel {
                         lblNotification.setText("Download Finished!");
                         lblNotification.setForeground(Color.decode("#fb3f62"));
                         if (main.getLibraryPanel() != null) {
-                            System.out.println("Mandando a seleccionar: " + finalFileName);
                             main.getLibraryPanel().loadMedia(finalFileName);
                         }
                     }
