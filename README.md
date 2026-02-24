@@ -17,8 +17,56 @@ With this app, users can:
 <img width="1920" height="1032" alt="image" src="https://github.com/user-attachments/assets/4a7d1520-6dcb-48c7-aab1-ec2b67d35394" />
 <img width="1920<img width="1920" height="1032" alt="image" src="https://github.com/user-attachments/assets/6647d4c0-9f53-418c-b33b-92e2a60a32f3" />
 
+__________________________________________________________________________________________________________________
 
+# 🎨 Visual Appearance & Style (Look & Feel)
+## 🌓 FlatLaf & Modern Design
+The FlatLaf library has been implemented to achieve a clean, modern aesthetic.
 
+- ***Color Scheme:*** A high-contrast palette is used (dark grey background with pink accents, utilizing the brand's corporate color #fb3f62).
+* **Dynamic Styling:** A **Toggle Theme** feature has been implemented, allowing users to switch seamlessly between **Dark** and **Light** modes.
+
+- ***Layouts:*** The nullLayout has been completely removed. Hybrid Layout Strategy:
+
+- BorderLayout: Used as the top-level manager in MainWindow to anchor the Sidebar, Library, and Status Bar.
+
+- MigLayout: Used in all internal panels to achieve a flexible grid system. This allows for Dynamic Resizing where components grow or shrink proportionally, maintaining visual integrity even when the window is maximized.
+
+- Constraints: Defined setMinimumSize to prevent UI "collapse" and ensure all controls remain accessible.
+
+## 🔠 Text and Fonts
+- ***Typographic Hierarchy:*** The Montserrat font is used with different weights (Bold for titles, Regular for data) to significantly improve legibility and information architecture.
+
+## 🖼️ Iconography
+Icons have been integrated to make the app more visual, modern, and intuitive.
+
+- ***Interactive Buttons:*** For aesthetic purposes, buttons are displayed as "primary" action components, which transition into icons upon mouse hover.
+
+- ***Tooltips:*** All buttons feature descriptive tooltips and cursor state changes (hand cursor) to clearly indicate they are clickable.
+
+# 🖱️ Interaction and Affordance
+## 👁️ Visibility and Feedback
+
+- ***Status Reporting:*** The application constantly informs the user of its internal state. During downloads, a JProgressBar shows the real-time percentage. Upon completion, a text label changes color to confirm either success or failure (Red).
+
+- ***Auto-Scroll & Selection:*** After a successful download, the system automatically scrolls to the new row and selects it in blue. This ensures the user does not have to manually search for the newly added file.
+
+- ***Informative Dialogs:*** JOptionPane alerts have been added to actions like "Delete" or "Play" (if no file is selected), providing immediate guidance to the user.
+- ***Informative JLabels:*** that alerts if you press the "Download" button without a URL.
+ 
+## 🛑 Constraints
+- ***State Control:*** The download button is disabled while a process is in progress, preventing the user from saturating bandwidth or causing file conflicts.
+
+- ***Conditional Logic:*** If the "Only Audio" option is not selected, the JComboBox for choosing the audio format remains disabled to prevent invalid configurations.
+
+# 🔍 Data Management and Search
+## 🧪 Regular Expressions (Regex)
+- ***Real-Time Filtering:*** The search bar utilizes Regex to filter the table dynamically. As the user types a name, the table updates instantly to show matching results.
+
+# 🧵 Concurrency & Performance
+- ***Multi-threading (SwingWorker):*** All heavy processes, such as video downloading via yt-dlp and cloud synchronization with  [MediaPollingBean](https://github.com/Perelluent/MediaPollingBean), are executed in background threads.
+  This ensures the UI remains responsive (non-blocking), allowing the user to browse the library while a download is in progress.
+__________________________________________________________________________________________________________________________
 
 ## ☁️ Cloud Integration (Powered by [MediaPollingBean](https://github.com/Perelluent/MediaPollingBean))
 Tubify integrates a custom **Java Bean component** to provide enterprise-level features:
@@ -90,4 +138,8 @@ The component uses a custom event system to notify your application when new fil
 - [yt-dlp Documentation](https://github.com/yt-dlp/yt-dlp/wiki)  
 - [Oracle Swing Components Guide](https://docs.oracle.com/javase/tutorial/uiswing/components/)  
 - [FFmpeg Documentation](https://ffmpeg.org/ffmpeg-filters.html)
+
+___________________________________________________________________________________________________________________
+
+
 
