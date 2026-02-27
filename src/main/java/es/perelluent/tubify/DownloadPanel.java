@@ -15,10 +15,23 @@ import java.util.regex.*;
 import javax.swing.*;
 import net.miginfocom.swing.MigLayout;
 
+/**
+ * Panel responsible for managing video and audio downloads using yt-dlp.
+ * This panel provides a user interface for entering a URL, selecting
+ * resolution or audio format, and initiating a download.
+ * 
+ * Uses a {@link SwingWorker} to execute yt-dlp asynchronously,
+ * ensuring the UI remains responsive while tracking progress in real time.
+ * Downloaded files are saved to the library directory configured in the
+ * {@link MainWindow}.
+ * 
+ * @author Perelluent
+ * @version 1.0
+ */
+
 public class DownloadPanel extends JPanel {
 
     private final String YTDLP_PATH = System.getenv("LOCALAPPDATA") + "\\yt-dlp\\yt-dlp.exe";
-    private final String PROPERTIES_PATH = System.getProperty("user.home") + File.separator + "TubifySettings.properties";
     private final Properties props = new Properties();
 
     private final MainWindow main;
@@ -33,14 +46,14 @@ public class DownloadPanel extends JPanel {
     public DownloadPanel(MainWindow main) {
         this.main = main;
 
-        setLayout(new MigLayout("fill, insets 10", "[grow]", "[]")); //Layout principal
+        setLayout(new MigLayout("fill, insets 10", "[grow]", "[]")); //Main Layout
 
         initComponents();
     }
 
     private void initComponents() {
 
-        JPanel pnlCard = new JPanel(new MigLayout("wrap, insets 20, gapy 10", "[grow, fill]")); // Layout del panel
+        JPanel pnlCard = new JPanel(new MigLayout("wrap, insets 20, gapy 10", "[grow, fill]")); // Panel Layout
         pnlCard.putClientProperty("FlatLaf.style", "arc: 20");
 
         JLabel lblTitle = new JLabel("DOWNLOAD");
@@ -107,7 +120,11 @@ public class DownloadPanel extends JPanel {
 
         add(pnlCard, "grow");
     }
-
+    /**
+     * Starts the download process using yt-dlp with the specified output path.
+     * 
+     * @param outputPath the file path template where the downloaded media will be saved.
+     */
     private void downloadVideo(String outputPath) {
 
         btnDownload.setEnabled(false);
@@ -251,7 +268,12 @@ public class DownloadPanel extends JPanel {
         };
         worker.execute();
     }
-
+    
+    /**
+     * Returns the yt-dlp format selector string based on the chosen resolution.
+     * @param selected the resolution label selected by the user
+     * @return a format selector compatible with yt-dlp
+     */
     private String chooseResolution(String selected) {
         if (selected.contains("1080")) {
             return "bv*[height<=1080]+ba/b[height<=1080]";

@@ -35,4 +35,26 @@
         <maven.compiler.release>24</maven.compiler.release>
         <exec.mainClass>es.perelluent.tubify.Tubify</exec.mainClass>
     </properties>
+    <build> 
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.11.2</version>
+                <configuration>
+                    <outputDirectory>${project.basedir}/doc</outputDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>generate-javadoc</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>javadoc</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>

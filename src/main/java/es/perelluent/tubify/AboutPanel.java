@@ -26,8 +26,11 @@ import javax.swing.border.EmptyBorder;
 import net.miginfocom.swing.MigLayout;
 
 /**
- *
+ * Panel that displays information about the application, including author details,
+ * used resources, repository link, and the application logo. 
+ * 
  * @author Perelluent
+ * @version 1.0
  */
 public class AboutPanel extends JPanel {
     
@@ -39,9 +42,12 @@ public class AboutPanel extends JPanel {
         initComponents();
     }
 
+    /**
+     * Initializes and configures all components displayed in the panel.
+     */
     private void initComponents() {
 
-        // Layout principal
+        // Main Layout
         JPanel pnlAbout = new JPanel(new MigLayout("wrap, insets 40, gapy 12", "[grow, fill]"));
 
         pnlAbout.setOpaque(true);
@@ -50,7 +56,9 @@ public class AboutPanel extends JPanel {
             new FlatLineBorder(new Insets(0,0,0,0), Color.GRAY, 1, 25),
             new EmptyBorder(10, 10, 10, 10)
         ));
+        
         //Logo
+        
         JLabel lblLogo = new JLabel();
         URL imageUrl = getClass().getResource("/images/logo.png");
         lblLogo = new JLabel();
@@ -84,7 +92,7 @@ public class AboutPanel extends JPanel {
         txtRepo.setOpaque(false);
         txtRepo.setFont(new Font("Montserrat", Font.PLAIN, 12)); 
         
-        // Botón back
+        // Back button
         JButton btnBack = new JButton("Back to App");
         btnBack.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnBack.putClientProperty("FlatLaf.style", "arc: 15; background: #fb3f62; foreground: #ffffff");
@@ -96,7 +104,7 @@ public class AboutPanel extends JPanel {
             }
         });
 
-        // Añadimos complementos al panel.
+        // Add complements to the panel
         pnlAbout.add(lblLogo, "align center, gapbottom 15");
         pnlAbout.add(lblAuthor, "align center");
         pnlAbout.add(lblCourse, "align center, gapbottom 10");

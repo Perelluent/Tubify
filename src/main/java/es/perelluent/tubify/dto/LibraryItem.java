@@ -7,8 +7,10 @@ package es.perelluent.tubify.dto;
 import es.perelluent.mediapollingbean.dto.Media;
 
 /**
- *
+ * Represents an unified media entry in the library, combining cloud media and local file.
+ * 
  * @author Perelluent
+ * @version 1.0
  */
 public class LibraryItem {
 
@@ -23,6 +25,9 @@ public class LibraryItem {
         this.localFile = localFile;
     }
 
+    // ------------------------- 
+    // Getters and Setters 
+    // -------------------------
     public Media getCloudMedia() {
         return cloudMedia;
     }
@@ -101,5 +106,4 @@ public class LibraryItem {
             return "Unknown";
         }
     }
-
 }

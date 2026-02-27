@@ -16,8 +16,21 @@ import javax.swing.*;
 import net.miginfocom.swing.MigLayout;
 
 /**
- *
+ *Panel responsible for handling user authentication within the application.
+ * 
+ * This component provides a modern login interface with support for:
+ * <ul>
+ *   <li>Email and password input fields</li>
+ *   <li>A “Remember Me” option using {@link java.util.prefs.Preferences}</li>
+ *   <li>Automatic session restoration when a valid token is stored</li>
+ *   <li>Visual error feedback for failed login attempts</li>
+ * </ul>
+ * 
+ * The panel communicates with {@link MediaPollingBean} to authenticate the user
+ * and with {@link MainWindow} to update the application state after login.
+ * 
  * @author Perelluent
+ * @version 1.0
  */
 public class LoginPanel extends JPanel {
 
@@ -34,6 +47,7 @@ public class LoginPanel extends JPanel {
     private JCheckBox chkRememberMe;
     private JLabel lblError;
 
+    // Local preferences for the remember me check.
     private final Preferences prefs = Preferences.userNodeForPackage(es.perelluent.tubify.LoginPanel.class);
     private final String prefEmail = "user_email";
     private final String prefToken = "user_token";
@@ -51,6 +65,17 @@ public class LoginPanel extends JPanel {
         initComponents();
     }
 
+    /**
+     * Initializes and configures all UI components of the login panel.
+     * This includes:
+     * <ul>
+     *   <li>Logo display</li>
+     *   <li>Email and password fields with placeholder styling</li>
+     *   <li>“Remember Me” checkbox</li>
+     *   <li>Login button with FlatLaf styling</li>
+     *   <li>Error label for authentication feedback</li>
+     * </ul>
+     */
     private void initComponents() {
 
         JPanel pnlForm = new JPanel(new MigLayout("wrap, insets 30, gapy 10", "[grow, fill]"));
@@ -66,7 +91,7 @@ public class LoginPanel extends JPanel {
         }
         lblLogo.setHorizontalAlignment(SwingConstants.CENTER);
 
-        // Campos de texto
+        // textfields
         txtUser = new JTextField();
         txtUser.putClientProperty("JTextField.placeholderText", "Email");
         txtUser.putClientProperty("FlatLaf.style", "arc: 15");
@@ -79,11 +104,11 @@ public class LoginPanel extends JPanel {
         chkRememberMe = new JCheckBox("Remember Me");
         chkRememberMe.setOpaque(false);
 
-        // Botón Login moderno
+        // Login button
         btnLogin = new JButton("LOGIN");
         btnLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnLogin.putClientProperty("JButton.buttonType", "roundRect");
-        // Color corporativo con el logo
+
         btnLogin.setBackground(Color.decode("#fb3f62"));
         btnLogin.setForeground(Color.WHITE);
 
@@ -99,12 +124,12 @@ public class LoginPanel extends JPanel {
 
         });
 
-        // Etiqueta de error
+        // Label error
         lblError = new JLabel("", SwingConstants.CENTER);
         lblError.setForeground(Color.RED);
         lblError.setFont(new Font("Montserrat-Regular", Font.BOLD, 9));
 
-        // Construcción del LoginForm
+        // add components to the panel
         pnlForm.add(lblLogo, "align center, gapbottom 20");
         pnlForm.add(new JLabel("User"), "gapleft 5");
         pnlForm.add(txtUser, "h 40!");
@@ -118,6 +143,13 @@ public class LoginPanel extends JPanel {
 
     }
 
+    /**
+     * Checks whether the user previously selected “Remember Me” and attempts
+     * automatic login if a stored token is still valid.
+     * If the token is valid, the user is redirected directly to the main window.
+     * If the token is invalid or expired, it is removed and the user is prompted
+     * to log in again.
+     */
     public void checkRememberMe() {
         boolean remember = prefs.getBoolean(prefRememberMe, false);
         if (remember) {
@@ -141,6 +173,16 @@ public class LoginPanel extends JPanel {
         }
     }
 
+    /**
+     * Handles the login button action. Retrieves the email and password entered 
+     * by the user, attempts authentication through {@link MediaPollingBean#login},
+     * saves or clears stored credentials depending on the “Remember Me” option,
+     * updates the main window with the new authentication token and displays 
+     * an error message if authentication fails.
+     * 
+     * @param evt the action event triggered by the Login button.
+     * @throws Exception if an unexpected error occurs during authentication
+     */
     private void btnLoginActionPerformed(ActionEvent evt) throws Exception {
         String email = txtUser.getText();
         var password = new String(pswPassword.getPassword());

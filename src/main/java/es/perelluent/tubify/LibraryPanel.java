@@ -21,9 +21,26 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import javax.swing.*;
 import javax.swing.table.TableRowSorter;
 import net.miginfocom.swing.MigLayout;
+
+/**
+ * Panel that displays and manages the user's media library, combining both local
+ * files stored on disk and cloud media synchronized through the application's
+ * backend services.
+ * This panel provides search, playback, upload, deletion, and logout actions,
+ * along with automatic synchronization of media items. It uses a custom
+ * {@link LibraryTableModel} to render media entries and integrates with
+ * {@link MainWindow} to access shared components
+ * 
+ * Media loading is performed asynchronously, merging cloud and local sources.
+ * The panel also supports automatic selection of newly downloaded files.
+ * 
+ * @author Perelluent
+ * @version 1.0
+ */
 
 public class LibraryPanel extends JPanel {
 
@@ -35,7 +52,6 @@ public class LibraryPanel extends JPanel {
     private String token = null;
     private final LoginPanel loginPanel;
 
-    // Botones
     private JButton btnPlay, btnUpload, btnDelete, btnLogout, btnPrefences;
 
     public LibraryPanel(MainWindow main) {
@@ -48,6 +64,18 @@ public class LibraryPanel extends JPanel {
         loadMedia();
     }
 
+      /**
+        * Initializes and configure all the components.
+        *  The interface includes:
+        * </p>
+        * <ul>
+        *   <li>A header with logo, title, search bar, and preferences button</li>
+        *   <li>A table listing local and cloud media with icons and metadata</li>
+        *   <li>Action buttons for playing, uploading, deleting, and logging out</li>
+        * </ul>
+        *
+        * <p>
+     */
     private void initComponents() {
 
         JPanel pnlHeader = new JPanel(new MigLayout("fillx, insets 0", "[][grow, center][right]"));
@@ -141,7 +169,7 @@ public class LibraryPanel extends JPanel {
         });
         btnLogout.setContentAreaFilled(false);
 
-        // Listeners de botones
+        // Listeners
         btnPlay.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -267,13 +295,18 @@ public class LibraryPanel extends JPanel {
         pnlActions.add(btnPrefences, "w 130!, h 40!, right");
         pnlActions.add(btnLogout, "w 40!, h 40!, right");
 
-        // Añadimos al panel principal
+        // add to the main panel
         add(pnlHeader, "wrap, gapbottom 10");
         add(scrollPane, "grow, wrap");
         add(pnlActions, "growx");
     }
 
-    // método que crea botones iguales.
+    /**
+     * Creates a styled button with consistent appearance across the panel.
+     * @param text that have the button.
+     * @param bg optional background color.
+     * @return a configured JButton.
+     */
     private JButton createStyledButton(String text, Color bg) {
         JButton btn = new JButton(text);
         btn.setFont(new Font("Montserrat", Font.BOLD, 12));
@@ -285,7 +318,10 @@ public class LibraryPanel extends JPanel {
         return btn;
     }
 
-    // filtrar la tabla
+    /**
+     * Filters the media table based on the given query.
+     * @param query the text used to filter media names.
+     */
     private void filter(String query) {
         TableRowSorter<LibraryTableModel> sorter = new TableRowSorter<>(libraryModel);
         tblLibrary.setRowSorter(sorter);
@@ -293,7 +329,7 @@ public class LibraryPanel extends JPanel {
             sorter.setRowFilter(null);
         } else {
             try {
-                String escapedQuery = java.util.regex.Pattern.quote(query);
+                String escapedQuery = Pattern.quote(query);
 
                 sorter.setRowFilter(RowFilter.regexFilter("(?i)" + escapedQuery));
             } catch (java.util.regex.PatternSyntaxException e) {
@@ -302,7 +338,14 @@ public class LibraryPanel extends JPanel {
         }
     }
 
-    // Action Events de los botones
+    /** 
+     * Handles the play button action. It opens the media item in the default
+     * media player. Streams cloud media by downloading it temprarily.
+     * 
+     * @see #playCloudMedia(es.perelluent.mediapollingbean.dto.Media) 
+     * 
+     * @param evt the action event triggered by the Play button.
+     */
     private void btnPlayActionPerformed(java.awt.event.ActionEvent evt) {
         int viewRow = tblLibrary.getSelectedRow();
         if (viewRow == -1) {
@@ -316,31 +359,33 @@ public class LibraryPanel extends JPanel {
             return;
         }
 
-        // si está en local
         if (selectedMedia.getLocalFile() != null) {
             File file = new File(selectedMedia.getLocalFile().getFilePath());
 
             if (file.exists()) {
                 try {
-                    java.awt.Desktop.getDesktop().open(file);
+                    Desktop.getDesktop().open(file);
                 } catch (IOException ex) {
                     System.getLogger(LibraryPanel.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
                 }
                 return;
             } else {
-                // Si no existe la ruta
-                javax.swing.JOptionPane.showMessageDialog(this,
+                JOptionPane.showMessageDialog(this,
                         "File missing from disk: " + file.getAbsolutePath(),
-                        "Local File Error", javax.swing.JOptionPane.WARNING_MESSAGE);
+                        "Local File Error", JOptionPane.WARNING_MESSAGE);
             }
         }
-
-        // Si está solo en la nube
         if (selectedMedia.getCloudMedia() != null) {
             playCloudMedia(selectedMedia.getCloudMedia());
         }
     }
 
+    /**
+     * Logs the user out of the application. Stops the media polling service, clears authentication tokens,
+     * resets login fields, and returns the user to the login panel.
+     * 
+     * @param evt the action event triggered by the Logout button
+     */
     private void btnLogoutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLogoutActionPerformed
 
         int response = JOptionPane.showConfirmDialog(
@@ -363,45 +408,11 @@ public class LibraryPanel extends JPanel {
         }
     }
 
-    private void playCloudMedia(Media media) {
-        // Usamos un SwingWorker para no congelar la pantalla mientras baja
-        SwingWorker<File, Void> worker = new SwingWorker<>() {
-            @Override
-            protected File doInBackground() throws Exception {
-                // Crear archivo temporal
-                String ext = media.mediaFileName.contains(".")
-                        ? media.mediaFileName.substring(media.mediaFileName.lastIndexOf(".")) : ".tmp";
-                File tempFile = File.createTempFile("tubify_stream_", ext);
-                tempFile.deleteOnExit();
-
-                main.getMediaPollingBean().download(media.id, tempFile); //
-
-                return tempFile;
-            }
-
-            @Override
-            protected void done() {
-                try {
-                    File tempFile = get();
-                    java.awt.Desktop.getDesktop().open(tempFile);
-                } catch (Exception ex) {
-                    javax.swing.JOptionPane.showMessageDialog(LibraryPanel.this,
-                            "Error streaming file: " + ex.getMessage());
-                    ex.printStackTrace();
-                }
-            }
-        };
-
-        // Mostrar cursor de espera
-        this.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
-        worker.addPropertyChangeListener(evt -> {
-            if (javax.swing.SwingWorker.StateValue.DONE == evt.getNewValue()) {
-                this.setCursor(java.awt.Cursor.getDefaultCursor());
-            }
-        });
-        worker.execute();
-    }
-
+    /**
+     * Handles the Upload button action that upload a file media to the cloud.
+     * 
+     * @param evt the action event triggeres by the Upload Button.
+     */
     private void btnUploadActionPerformed(java.awt.event.ActionEvent evt) {
         int viewRow = tblLibrary.getSelectedRow();
         if (viewRow == -1) {
@@ -411,7 +422,7 @@ public class LibraryPanel extends JPanel {
 
         int modelRow = tblLibrary.convertRowIndexToModel(viewRow);
         LibraryItem item = libraryModel.getItemAt(modelRow);
-        // Si no está en local
+        // If it's not in disk.
         if (item.getLocalFile() == null) {
             JOptionPane.showMessageDialog(this,
                     "This file is only in the Cloud. You cannot upload it again.",
@@ -419,7 +430,7 @@ public class LibraryPanel extends JPanel {
             return;
         }
 
-        // Si ya está subido
+        // If it's already in the cloud.
         if (item.getCloudMedia() != null) {
             javax.swing.JOptionPane.showMessageDialog(this,
                     "This file is already synchronized with the Cloud.",
@@ -427,8 +438,7 @@ public class LibraryPanel extends JPanel {
             return;
         }
 
-        // Subida
-        SwingWorker<Void, Void> worker = new javax.swing.SwingWorker<>() {
+        SwingWorker<Void, Void> worker = new SwingWorker<>() {
             @Override
             protected Void doInBackground() throws Exception {
 
@@ -450,7 +460,7 @@ public class LibraryPanel extends JPanel {
                             "Upload Successful!",
                             "Success", JOptionPane.INFORMATION_MESSAGE);
 
-                    // Recargar la lista de items
+                    // Reload item list
                     loadMedia();
 
                 } catch (Exception e) {
@@ -464,6 +474,11 @@ public class LibraryPanel extends JPanel {
         worker.execute();
     }
 
+    /**
+     * Handles the Delete button action that deletes a local file from disk after user confirmation.
+     * 
+     * @param evt the action event triggered by the Delete button.
+     */
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {
         int selectedRow = tblLibrary.getSelectedRow();
         if (selectedRow == -1) {
@@ -500,13 +515,67 @@ public class LibraryPanel extends JPanel {
                     "This file is only in the Cloud. Local deletion is not possible.");
         }
     }
+    /**
+     * Streams a cloud media file by downloading it temporarily and opening it.
+     * The download is performed in a background {@link SwingWorker} to avoid
+     * blocking the UI. A temporary file is created and deleted automatically
+     * when the JVM exits.
+     * 
+     * @param media the cloud media metadata to stream
+     */
+    private void playCloudMedia(Media media) {
 
-    // cargar la tabla
+        SwingWorker<File, Void> worker = new SwingWorker<>() {
+            @Override
+            protected File doInBackground() throws Exception {
+                // Creates the temporary file
+                String ext = media.mediaFileName.contains(".")
+                        ? media.mediaFileName.substring(media.mediaFileName.lastIndexOf(".")) : ".tmp";
+                File tempFile = File.createTempFile("tubify_stream_", ext);
+                tempFile.deleteOnExit();
+
+                main.getMediaPollingBean().download(media.id, tempFile); 
+
+                return tempFile;
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    File tempFile = get();
+                    Desktop.getDesktop().open(tempFile);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(LibraryPanel.this,
+                            "Error streaming file: " + ex.getMessage());
+                    ex.printStackTrace();
+                }
+            }
+        };
+
+        // changes to wait cursor
+        this.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+        worker.addPropertyChangeListener(evt -> {
+            if (javax.swing.SwingWorker.StateValue.DONE == evt.getNewValue()) {
+                this.setCursor(java.awt.Cursor.getDefaultCursor());
+            }
+        });
+        worker.execute();
+    }
+
+    /**
+     * Loads media from both cloud and local sources, merges them, and updates the table.
+     *
+     * This method runs asynchronously to avoid blocking the UI. If a filename is
+     * provided, the table attempts to automatically select and scroll to the
+     * corresponding row after loading.
+     * 
+     * @param fileToSelect optional filename to highlight after loading
+     */
     public void loadMedia(String fileToSelect) {
-        // Definimos el hilo para la carga de datos (Nube + Local)
+
         Thread thread = new Thread(() -> {
             try {
-                // 1. Cargar lista de la nube
+                // Load cloud list
                 List<Media> cloudList = null;
                 if (main.getMediaPollingBean().getToken() != null) {
                     try {
@@ -516,7 +585,7 @@ public class LibraryPanel extends JPanel {
                     }
                 }
 
-                // 2. Cargar lista local desde las preferencias
+                // Load local list
                 List<DownloadedFile> localList = new ArrayList<>();
                 String userHome = System.getProperty("user.home");
                 String propsPath = userHome + File.separator + "TubifySettings.properties";
@@ -545,34 +614,34 @@ public class LibraryPanel extends JPanel {
                     }
                 }
 
-                // Mezclar listas
+                // Merge lists
                 final List<LibraryItem> mergedList = mergeLists(cloudList, localList);
 
-                // Actualizar la lista
+                // Update media list
                 SwingUtilities.invokeLater(() -> {
                     libraryModel.setItems(mergedList);
 
-                    // Si hay un archivo específico para seleccionar
+                    // If there are an specific file to select
                     if (fileToSelect != null && !fileToSelect.isEmpty()) {
                         String searchName = fileToSelect.contains(".")
                                 ? fileToSelect.substring(0, fileToSelect.lastIndexOf("."))
                                 : fileToSelect;
 
-                        // Timer de 100ms para asegurar que JTable ha renderizado las nuevas filas
+                        // 100ms Timer to ensure the JTable has finished rendering the new rows
                         javax.swing.Timer selectionTimer = new javax.swing.Timer(200, e -> {
-                            String cleanTarget = fileToSelect.replaceAll("\\.f\\d+\\.[a-z0-9]+$", "") // Quita temporal yt-dlp
-                                    .replaceAll("\\.[^.]+$", "") // Quita extensión
-                                    .replaceAll("[^a-zA-Z0-9]", "") // Quita TODO lo que no sea letra/número
+                            String cleanTarget = fileToSelect.replaceAll("\\.f\\d+\\.[a-z0-9]+$", "") // Remove temporal yt-dlp
+                                    .replaceAll("\\.[^.]+$", "") // Remove extension
+                                    .replaceAll("[^a-zA-Z0-9]", "") // Removes everything that is NOT a letter or a digit 
                                     .toLowerCase();
 
                             for (int i = 0; i < tblLibrary.getRowCount(); i++) {
                                 Object value = tblLibrary.getValueAt(i, 2);
                                 if (value != null) {
-                                    String nameInTable = value.toString().replaceAll("\\.[^.]+$", "") // Quita extensión
-                                            .replaceAll("[^a-zA-Z0-9]", "") // Quita símbolos
+                                    String nameInTable = value.toString().replaceAll("\\.[^.]+$", "")
+                                            .replaceAll("[^a-zA-Z0-9]", "") // Remove symbols
                                             .toLowerCase();
 
-                                    // Comparación por proximidad
+                                    // Proximity comparison
                                     if (!cleanTarget.isEmpty() && (nameInTable.contains(cleanTarget) || cleanTarget.contains(nameInTable))) {
                                         final int row = i;
                                         tblLibrary.setRowSelectionInterval(row, row);
@@ -598,14 +667,22 @@ public class LibraryPanel extends JPanel {
     }
 
     /**
-     * Versión sobrecargada para recargar la lista sin seleccionar nada
-     * específico.
+     * Reloads the media list without selecting any specific file.
      */
     public void loadMedia() {
         loadMedia(null);
     }
 
-    // Combinar archivos en la nube y local
+    /**
+     * Merges cloud media and local files into a unified list of {@link LibraryItem}.
+     *
+     * Items are matched by filename. If a file exists both locally and in the cloud,
+     * they are combined into a single entry.
+     * 
+     * @param cloud list of cloud media items
+     * @param local list of local downloaded media items
+     * @return a merged list of library items
+     */
     private List<LibraryItem> mergeLists(List<Media> cloud, List<DownloadedFile> local) {
         Map<String, LibraryItem> map = new HashMap<>();
         if (cloud != null) {

@@ -5,8 +5,8 @@
 package es.perelluent.tubify.dto;
 
 import es.perelluent.tubify.MainWindow;
-import java.awt.Color;
 import java.awt.Component;
+import java.net.URL;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -14,8 +14,13 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 
 /**
- *
+ * Custom cell renderer for the Library JTable that replaces text values 
+ * with icons that represent, the media type and  the media origin.
+ * It enhances readability by showing intuitive icons instead of raw text,
+ * and applies tooltips to provide additional context to the user.
+ * 
  * @author Perelluent
+ * @version 1.0
  */
 public class LibraryIconRenderer extends DefaultTableCellRenderer {
 
@@ -33,11 +38,19 @@ public class LibraryIconRenderer extends DefaultTableCellRenderer {
         localIcon = loadIcon("/images/local.png", 40, 40);
         syncIcon = loadIcon("/images/sync.png", 40, 40);
 
-        setHorizontalAlignment(JLabel.CENTER);
+        setHorizontalAlignment(JLabel.CENTER); // Center icons inside table cells
     }
 
+    /**
+     * Loads and scales an icon from the given resource path.
+     * 
+     * @param path where the image is located.
+     * @param w desired width
+     * @param h desired height
+     * @return a scaled image (Icon).
+     */
     private Icon loadIcon(String path, int w, int h) {
-        java.net.URL imgUrl = getClass().getResource(path);
+        URL imgUrl = getClass().getResource(path);
         if (imgUrl != null) {
             return MainWindow.UpscaleIcon(new ImageIcon(imgUrl), w, h);
         }
@@ -49,11 +62,11 @@ public class LibraryIconRenderer extends DefaultTableCellRenderer {
             boolean isSelected, boolean hasFocus, int row, int column) {
 
         super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-        setText("");
+        setText(""); //Remove text.
  
         String val = (value != null) ? value.toString() : "";
 
-        if (column == 0) {
+        if (column == 0) { //Media Type
             if (val.toLowerCase().contains("audio") || val.toLowerCase().contains("mp3")) {
                 setIcon(audioIcon);
                 setToolTipText("Audio File");
@@ -62,7 +75,7 @@ public class LibraryIconRenderer extends DefaultTableCellRenderer {
                 setToolTipText("Video File");
             }
         } 
-        else if (column == 1) {
+        else if (column == 1) { // Media origin
             switch (val) {
                 case "Cloud Only":
                     setIcon(cloudIcon);

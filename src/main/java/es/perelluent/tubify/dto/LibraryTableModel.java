@@ -10,7 +10,8 @@ import java.util.List;
 import javax.swing.table.AbstractTableModel;
 
 /**
- *
+ * Table model used to display a list of {@link LibraryItem} objects inside the
+ * LibraryPanel JTable.
  * @author Perelluent
  */
 public class LibraryTableModel extends AbstractTableModel {
@@ -21,7 +22,9 @@ public class LibraryTableModel extends AbstractTableModel {
     public LibraryTableModel() {
         this.items = new ArrayList<>();
     }
-
+    // ------------------------- 
+    // Getters & Setters 
+    // -------------------------
     public void setItems(List<LibraryItem> items) {
         this.items = items;
         fireTableDataChanged();
@@ -37,6 +40,10 @@ public class LibraryTableModel extends AbstractTableModel {
         fireTableRowsDeleted(rowIndex, rowIndex);
     }
 
+    // ----------------------------
+    // AbstractTableModel overrides 
+    // ----------------------------
+    
     @Override
     public int getRowCount() { return items.size(); }
     @Override
@@ -52,8 +59,6 @@ public class LibraryTableModel extends AbstractTableModel {
             case 0: return item.getMediaMimeType();
             case 1: return item.getStatus();
             case 2: return item.getMediaName();
-//            case 3: return item.getSize();
-//            case 4: return item.getMediaDownloadedUrl();
             default: return null;
         }
     }

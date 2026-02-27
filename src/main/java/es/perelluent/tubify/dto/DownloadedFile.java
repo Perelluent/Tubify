@@ -9,8 +9,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- *
+ * Represents a media file stored locally on disk.
+ * 
  * @author Perelluent
+ * @version 1.0
  */
 public class DownloadedFile {
 
@@ -30,6 +32,9 @@ public class DownloadedFile {
     public DownloadedFile() {
     }
     
+    //--------------------
+    // getters & setters
+    //--------------------
 
     public String getFileName() {
         return fileName;

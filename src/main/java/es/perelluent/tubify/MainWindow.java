@@ -27,31 +27,48 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import net.miginfocom.swing.MigLayout;
 
+/**
+ * Main class that extends {@link JFrame}. Acts as a container for other panels
+ * (LoginPanel, LibraryPanel, DownloadPanel...) and manages {@link Properties}
+ * configurations. It implements {@link MediaPollingBeanListener} to react to
+ * events.
+ *
+ * * @author Perelluent
+ * @version 1.0
+ * @see #mediaPollingBean
+ */
 public class MainWindow extends JFrame implements MediaPollingBeanListener {
 
+    //Path where the yt-dlp executable is located.
     private final String YTDLP_PATH = System.getenv("LOCALAPPDATA") + "\\yt-dlp\\yt-dlp.exe";
+    //Path to the configuration file
     private final String PROPERTIES_PATH = System.getProperty("user.home") + File.separator + "TubifySettings.properties";
     private final Properties props = new Properties();
 
+    //Responsible for communication between the user, the cloud and events.
     private final MediaPollingBean mediaPollingBean;
-    private String token;
+    private String token; //JWT token obtained after a successful authentication
 
+    //Panels
     private final LoginPanel loginPanel;
     private final LibraryPanel libraryPanel;
     private final DownloadPanel downloadPanel;
     private final Preferences preferences;
     private final AboutPanel aboutPanel;
 
+    //Components of the top menu.
     private JMenuBar menuBar;
     private JMenu mnuFile, mnuEdit, mnuHelp;
     private JMenuItem mniExit, mniPreferences, mniAbout, mniTheme;
 
     public MainWindow() {
+        //Configuration and initialization of the MediaPollingBean component
         mediaPollingBean = new MediaPollingBean();
         mediaPollingBean.setApiUrl("https://difreenet9.azurewebsites.net");
         mediaPollingBean.setPollingInterval(30);
@@ -59,13 +76,15 @@ public class MainWindow extends JFrame implements MediaPollingBeanListener {
         pnlMain = new javax.swing.JPanel();
         initMenu();
 
+        // Configuration of main Panel
         this.getContentPane().setLayout(new BorderLayout());
         this.setMinimumSize(new Dimension(1100, 700));
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+        // Panel's inizialitation
         loginPanel = new LoginPanel(mediaPollingBean, this);
         preferences = new Preferences(this);
-        loadPreferences();
+        loadPreferences(); 
         aboutPanel = new AboutPanel(this);
         downloadPanel = new DownloadPanel(this);
         libraryPanel = new LibraryPanel(this);
@@ -76,7 +95,11 @@ public class MainWindow extends JFrame implements MediaPollingBeanListener {
         loginPanel.checkRememberMe();
     }
 
+    /**
+     * Initializes and configures the main menu bar.
+     */
     private void initMenu() {
+
         menuBar = new JMenuBar();
 
         mnuFile = new JMenu("File");
@@ -112,7 +135,7 @@ public class MainWindow extends JFrame implements MediaPollingBeanListener {
         setJMenuBar(menuBar);
     }
 
-    // Configuramos el Layout en dos columnas
+    // Set up the layout in two columns
     private void setupMainLayout() {
         pnlMain.removeAll();
 
@@ -121,7 +144,11 @@ public class MainWindow extends JFrame implements MediaPollingBeanListener {
         pnlMain.add(downloadPanel, "growy");
         pnlMain.add(libraryPanel, "growy");
     }
-
+    
+    //----------------------------------------------
+    //| Methods for displaying and switching panels|
+    //----------------------------------------------
+    
     public void showMainWindow() {
         loginPanel.setVisible(false);
         preferences.setVisible(false);
@@ -164,7 +191,11 @@ public class MainWindow extends JFrame implements MediaPollingBeanListener {
         this.revalidate();
         this.repaint();
     }
-
+    /**
+     * This method extracts values from the {@code preferences} panel, updates the 
+     * local {@link Properties} object, and writes it to the disk at {@code PROPERTIES_PATH}.
+     * After saving, it calls {@link #loadPreferences()} to synchronize the application state. 
+    */
     public void savePreferences() {
         try (FileOutputStream out = new FileOutputStream(PROPERTIES_PATH)) {
             // para guardar las porpiedades del usuario
@@ -182,7 +213,14 @@ public class MainWindow extends JFrame implements MediaPollingBeanListener {
         }
     }
 
-    public final void loadPreferences() { // carga las propiedades 
+    /**
+     * This method checks for the existence of the properties file. If the file does not 
+     * exist, it initializes the application with system-specific default values. If the 
+     * file exists, it reads the stored keys and updates the {@code preferences} panel.
+     * 
+     * @see #savePreferences() 
+     */
+    public final void loadPreferences() {
         File configFile = new File(PROPERTIES_PATH);
         String defaultDownloads = new JFileChooser().getFileSystemView().getDefaultDirectory().getPath();
         if (!configFile.exists()) {
@@ -203,6 +241,9 @@ public class MainWindow extends JFrame implements MediaPollingBeanListener {
         }
     }
 
+    //--------------------
+    //| Getters & Setters |
+    //--------------------
     public LibraryPanel getLibraryPanel() {
         return libraryPanel;
     }
@@ -226,7 +267,12 @@ public class MainWindow extends JFrame implements MediaPollingBeanListener {
     public void setToken(String token) {
         this.token = token;
     }
-
+    /**
+     * Handles the event triggered when new media is detected by the {@link MediaPollingBean}.
+     * @param evt the event containing information about the newly found media.
+     * 
+     * @see MediaPollingBeanListener
+     */
     @Override
     public void onNewMediaFound(MediaPollingBeanEvent evt) {
         if (libraryPanel != null) {
@@ -234,8 +280,15 @@ public class MainWindow extends JFrame implements MediaPollingBeanListener {
         }
     }
 
-    private javax.swing.JPanel pnlMain;
+    private final JPanel pnlMain;
 
+    /**
+     * Scales the given {@link ImageIcon} to the specified width and height.
+     * @param icon the original icon to be scaled.
+     * @param width the desired width of the resulting icon.
+     * @param height the desired height of the resulting icon.
+     * @return a new {@link ImageIcon} with the scaled image.
+     */
     public static ImageIcon UpscaleIcon(ImageIcon icon, int width, int height) {
         if (icon == null) {
             return null;
@@ -245,7 +298,12 @@ public class MainWindow extends JFrame implements MediaPollingBeanListener {
         return new ImageIcon(newImg);
     }
 
-    public void changeTheme() { // para cambiar de dark mode a light mode
+    /**
+     * Toggles the application's theme between light and dark modes using FlatLaf.
+     * 
+     * @see LookAndFeel
+     */
+    public void changeTheme() { 
         try {
 
             LookAndFeel nextLaf = com.formdev.flatlaf.FlatLaf.isLafDark()
@@ -279,13 +337,13 @@ public class MainWindow extends JFrame implements MediaPollingBeanListener {
 
     public static void main(String args[]) {
         try {
-            // Configuramos una nueva fuente
+            // Set up a new font
             InputStream is = MainWindow.class.getResourceAsStream("/fonts/Montserrat-Regular.ttf");
             Font montserrat = Font.createFont(Font.TRUETYPE_FONT, is).deriveFont(13f);
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
             ge.registerFont(montserrat);
 
-            // Configurar FlatLaf para que use esa fuente por defecto
+            // Setup flatlaf for using this new font.
             UIManager.put("defaultFont", montserrat);
 
             com.formdev.flatlaf.FlatDarkLaf.setup();

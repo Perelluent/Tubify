@@ -26,13 +26,31 @@ import javax.swing.border.EmptyBorder;
 import net.miginfocom.swing.MigLayout;
 
 /**
+ * Panel that manages all user-configurable application settings.
+ * <p>
+ * This panel allows the user to define:
+ * </p>
+ * <ul>
+ *   <li>The download (library) folder path</li>
+ *   <li>The temporary directory used by yt-dlp</li>
+ *   <li>The path to the yt-dlp executable</li>
+ *   <li>Whether .m3u playlist files should be created</li>
+ *   <li>A download speed limit (500K or 2M)</li>
+ * </ul>
  *
+ * <p>
+ * It communicates with {@link MainWindow} to save preferences and return to the
+ * main application view.
+ * </p>
+ * 
  * @author Perelluent
+ * @version 1.0
  */
 public class Preferences extends JPanel {
 
     private final MainWindow main;
 
+    //Components
     private JButton btnBack;
     private JButton btnBrowseFolderPath;
     private JButton btnBrowseTempDir;
@@ -53,6 +71,9 @@ public class Preferences extends JPanel {
         initComponents();
     }
 
+    /**
+     * Initializes and configures all UI components of the preferences panel.
+     */
     private void initComponents() {
 
         JPanel pnlCard = new JPanel(new MigLayout("wrap, insets 50, gapy 15", "[grow, fill][]"));
@@ -107,6 +128,7 @@ public class Preferences extends JPanel {
         btnBack.setBackground(Color.decode("#fb3f62")); // Color rosa del login
         btnBack.setForeground(Color.WHITE);
 
+        // add components to the panel
         pnlCard.add(lblLogo, "align right, gapright 10");
         pnlCard.add(lblPreferences, "align left, gapbottom 15, wrap");
 
@@ -135,7 +157,10 @@ public class Preferences extends JPanel {
         setupListeners();
     }
 
-    // método para agrupar Listeners.
+    /**
+     * Groups all action listeners for the buttons.
+     * This keeps the initialization method clean and organized.
+     */
     private void setupListeners() {
         btnBack.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -162,8 +187,11 @@ public class Preferences extends JPanel {
         });
     }
 
-    // métodos actionPerformed.
+    //---------------------
+    // Action Performed's
+    //---------------------
     private void btnBackActionPerformed(ActionEvent evt) {
+        
         main.savePreferences();
         this.setVisible(false);
         main.showMainWindow();
@@ -193,7 +221,9 @@ public class Preferences extends JPanel {
         }
     }
 
-    // getters y setters
+    //--------------------
+    // getters & setters
+    //--------------------
     public String getYtdlpPath() {
         return txtYtdlpPath.getText();
     }
