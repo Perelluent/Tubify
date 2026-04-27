@@ -86,7 +86,7 @@ public class MainWindow extends JFrame implements MediaPollingBeanListener {
         // Panel's inizialitation
         loginPanel = new LoginPanel(mediaPollingBean, this);
         preferences = new Preferences(this);
-        loadPreferences(); 
+        loadPreferences();
         aboutPanel = new AboutPanel(this);
         downloadPanel = new DownloadPanel(this);
         libraryPanel = new LibraryPanel(this);
@@ -142,34 +142,36 @@ public class MainWindow extends JFrame implements MediaPollingBeanListener {
         menuBar.add(mnuHelp);
         setJMenuBar(menuBar);
     }
-    
-    private void docsActionPerformed() {                                               
-    try {
-        String appDataPath = System.getenv("APPDATA");
-        
-        File pdfFile = new File(appDataPath + File.separator + "Tubify" + File.separator + "Manual_usuario_Tubify.pdf");
+
+    private void docsActionPerformed() {
+        try {
+            String path = System.getProperty("user.dir"); 
+        File pdfFile = new File(path + File.separator + "Manual_usuario_Tubify.pdf");
 
         if (pdfFile.exists()) {
             Desktop.getDesktop().open(pdfFile);
         } else {
-            System.out.println("No se encuentra el manual en: " + pdfFile.getAbsolutePath());
+            JOptionPane.showMessageDialog(this, "Manual no encontrado en: " + pdfFile.getAbsolutePath());
         }
-    } catch (IOException ex) {
+    } catch (Exception ex) {
         ex.printStackTrace();
     }
-}
+    }
+
     private void apiDocsActionPerformed() {
-    try {
-        String appDataPath = System.getenv("APPDATA");
-        File apiFile = new File(appDataPath + File.separator + "Tubify" + File.separator + "apidocs" + File.separator + "index.html");
+        try {
+            String path = System.getProperty("user.dir");
+        File apiFile = new File(path + File.separator + "index.html");
 
         if (apiFile.exists()) {
             Desktop.getDesktop().browse(apiFile.toURI());
+        } else {
+            JOptionPane.showMessageDialog(this, "Javadoc no encontrada en: " + apiFile.getAbsolutePath());
         }
-    } catch (IOException ex) {
+    } catch (Exception ex) {
         ex.printStackTrace();
     }
-}
+    }
 
     // Set up the layout in two columns
     private void setupMainLayout() {
@@ -180,11 +182,10 @@ public class MainWindow extends JFrame implements MediaPollingBeanListener {
         pnlMain.add(downloadPanel, "growy");
         pnlMain.add(libraryPanel, "growy");
     }
-    
+
     //----------------------------------------------
     //| Methods for displaying and switching panels|
     //----------------------------------------------
-    
     public void showMainWindow() {
         loginPanel.setVisible(false);
         preferences.setVisible(false);
@@ -227,11 +228,13 @@ public class MainWindow extends JFrame implements MediaPollingBeanListener {
         this.revalidate();
         this.repaint();
     }
+
     /**
-     * This method extracts values from the {@code preferences} panel, updates the 
-     * local {@link Properties} object, and writes it to the disk at {@code PROPERTIES_PATH}.
-     * After saving, it calls {@link #loadPreferences()} to synchronize the application state. 
-    */
+     * This method extracts values from the {@code preferences} panel, updates
+     * the local {@link Properties} object, and writes it to the disk at
+     * {@code PROPERTIES_PATH}. After saving, it calls
+     * {@link #loadPreferences()} to synchronize the application state.
+     */
     public void savePreferences() {
         try (FileOutputStream out = new FileOutputStream(PROPERTIES_PATH)) {
             // para guardar las porpiedades del usuario
@@ -250,11 +253,12 @@ public class MainWindow extends JFrame implements MediaPollingBeanListener {
     }
 
     /**
-     * This method checks for the existence of the properties file. If the file does not 
-     * exist, it initializes the application with system-specific default values. If the 
-     * file exists, it reads the stored keys and updates the {@code preferences} panel.
-     * 
-     * @see #savePreferences() 
+     * This method checks for the existence of the properties file. If the file
+     * does not exist, it initializes the application with system-specific
+     * default values. If the file exists, it reads the stored keys and updates
+     * the {@code preferences} panel.
+     *
+     * @see #savePreferences()
      */
     public final void loadPreferences() {
         File configFile = new File(PROPERTIES_PATH);
@@ -303,10 +307,13 @@ public class MainWindow extends JFrame implements MediaPollingBeanListener {
     public void setToken(String token) {
         this.token = token;
     }
+
     /**
-     * Handles the event triggered when new media is detected by the {@link MediaPollingBean}.
+     * Handles the event triggered when new media is detected by the
+     * {@link MediaPollingBean}.
+     *
      * @param evt the event containing information about the newly found media.
-     * 
+     *
      * @see MediaPollingBeanListener
      */
     @Override
@@ -320,6 +327,7 @@ public class MainWindow extends JFrame implements MediaPollingBeanListener {
 
     /**
      * Scales the given {@link ImageIcon} to the specified width and height.
+     *
      * @param icon the original icon to be scaled.
      * @param width the desired width of the resulting icon.
      * @param height the desired height of the resulting icon.
@@ -335,11 +343,12 @@ public class MainWindow extends JFrame implements MediaPollingBeanListener {
     }
 
     /**
-     * Toggles the application's theme between light and dark modes using FlatLaf.
-     * 
+     * Toggles the application's theme between light and dark modes using
+     * FlatLaf.
+     *
      * @see LookAndFeel
      */
-    public void changeTheme() { 
+    public void changeTheme() {
         try {
 
             LookAndFeel nextLaf = com.formdev.flatlaf.FlatLaf.isLafDark()
