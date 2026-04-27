@@ -8,10 +8,12 @@ import es.perelluent.mediapollingbean.MediaPollingBean;
 import es.perelluent.MediaPollingBeanEvent.MediaPollingBeanEvent;
 import es.perelluent.MediaPollingBeanEvent.MediaPollingBeanListener;
 import java.awt.BorderLayout;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -65,7 +67,7 @@ public class MainWindow extends JFrame implements MediaPollingBeanListener {
     //Components of the top menu.
     private JMenuBar menuBar;
     private JMenu mnuFile, mnuEdit, mnuHelp;
-    private JMenuItem mniExit, mniPreferences, mniAbout, mniTheme;
+    private JMenuItem mniExit, mniPreferences, mniAbout, mniTheme, mniUserManual, mniDocs;
 
     public MainWindow() {
         //Configuration and initialization of the MediaPollingBean component
@@ -120,8 +122,14 @@ public class MainWindow extends JFrame implements MediaPollingBeanListener {
 
         mnuHelp = new JMenu("Help");
         mniAbout = new JMenuItem("About");
+        mniUserManual = new JMenuItem("UserManual");
+        mniDocs = new JMenuItem("Docs");
         mniAbout.addActionListener(e -> showAbout());
+        mniUserManual.addActionListener(e -> docsActionPerformed());
+        mniDocs.addActionListener(e -> apiDocsActionPerformed());
         mnuHelp.add(mniAbout);
+        mnuHelp.add(mniUserManual);
+        mnuHelp.add(mniDocs);
 
         JLabel lblLogo = new JLabel();
         java.net.URL imageUrl = getClass().getResource("/images/logo_isotype.png");
@@ -134,6 +142,34 @@ public class MainWindow extends JFrame implements MediaPollingBeanListener {
         menuBar.add(mnuHelp);
         setJMenuBar(menuBar);
     }
+    
+    private void docsActionPerformed() {                                               
+    try {
+        String appDataPath = System.getenv("APPDATA");
+        
+        File pdfFile = new File(appDataPath + File.separator + "Tubify" + File.separator + "Manual_usuario_Tubify.pdf");
+
+        if (pdfFile.exists()) {
+            Desktop.getDesktop().open(pdfFile);
+        } else {
+            System.out.println("No se encuentra el manual en: " + pdfFile.getAbsolutePath());
+        }
+    } catch (IOException ex) {
+        ex.printStackTrace();
+    }
+}
+    private void apiDocsActionPerformed() {
+    try {
+        String appDataPath = System.getenv("APPDATA");
+        File apiFile = new File(appDataPath + File.separator + "Tubify" + File.separator + "apidocs" + File.separator + "index.html");
+
+        if (apiFile.exists()) {
+            Desktop.getDesktop().browse(apiFile.toURI());
+        }
+    } catch (IOException ex) {
+        ex.printStackTrace();
+    }
+}
 
     // Set up the layout in two columns
     private void setupMainLayout() {
